@@ -1,4 +1,7 @@
 // Webgl program
+/**
+ * @type { WebGL2RenderingContext }
+ */
 var gl;
 // Shader programs
 var shaderProgram;
@@ -14,6 +17,9 @@ var depthMap;
 var shadowMapUniform;
 
 // Main canvas we're drawing in
+/**
+ * @type {HTMLCanvasElement}
+ */
 var canvas;
 // Camera
 var camera;
@@ -72,10 +78,7 @@ function start() {
     camera = new Camera();
     
     // Initialize the GL context
-    gl = canvas.getContext('webgl2', 
-        {   
-            antialias: true 
-        });
+    gl = canvas.getContext( 'webgl2', { antialias: true } );
     var isWebGL2 = !!gl;
     if(!isWebGL2) {
         alert("Your browser does not support WebGL2 :/");
@@ -118,19 +121,21 @@ function start() {
     initUBOs();
 
     // Create VAOs and data buffers
-    for(var i=0; i<entities.length; i++){
-        if(entities[i].mesh){
+    for ( var i=0 ; i < entities.length ; i++ )
+    {
+        if ( entities[i].mesh )
+        {
             var verticesBuffer          = gl.createBuffer();
             var verticesIndexBuffer     = gl.createBuffer();
             var verticesNormalBuffer    = entities[i].mesh.m_normals.length > 0 ? gl.createBuffer() : false;
             var verticesTexCoordsBuffer = entities[i].mesh.m_UV.length > 0 ? gl.createBuffer() : false;
         
             // Initiate buffers
-            initBuffers(entities[i].mesh, verticesBuffer, verticesIndexBuffer, verticesNormalBuffer, verticesTexCoordsBuffer);
+            initBuffers( entities[i].mesh, verticesBuffer, verticesIndexBuffer, verticesNormalBuffer, verticesTexCoordsBuffer );
             // Init VAO
-            vaos.push(initVAO(verticesBuffer, verticesIndexBuffer, verticesNormalBuffer, verticesTexCoordsBuffer, true));
+            vaos.push( initVAO( verticesBuffer, verticesIndexBuffer, verticesNormalBuffer, verticesTexCoordsBuffer, true ) );
             // Init DepthVAO
-            depthVaos.push(initVAO(verticesBuffer, verticesIndexBuffer));
+            depthVaos.push( initVAO( verticesBuffer, verticesIndexBuffer ) );
         }
     }
 
@@ -228,9 +233,10 @@ function drawSceneIfReady(){
     }
 }
 
-function loadObjects(){
-    var debug = 0;
-    if(debug){
+function loadObjects() {
+    var debug = 1;
+    if ( debug )
+    {
         var mats = 
         {
             mask : {
@@ -283,7 +289,9 @@ function loadObjects(){
                 fresnel     : "textures/gold/gold_M.png",
             }
         };
-    }else{
+    }
+    else
+    {
         var mats = 
         {
             mask : {

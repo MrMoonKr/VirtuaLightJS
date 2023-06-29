@@ -1,4 +1,5 @@
-class Texture{
+class Texture
+{
 
     constructor(texturePath, isHDR, wrap, filter, callback){
 
