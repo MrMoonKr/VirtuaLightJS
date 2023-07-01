@@ -5,15 +5,18 @@ var guiObj = {
     nbVertices : 0,
     nbTriangles : 0,
     shadowRes : "0 x 0",
-    fullscreen : false};
+    fullscreen : false
+};
 
-function initFPSCounter(){
+function initFPSCounter()
+{
     stats = new Stats();
     stats.showPanel( 0 );
     document.body.appendChild( stats.dom );
 }
 
-function initGui() {
+function initGui() 
+{
     initFPSCounter();
 
     var gui = new dat.GUI();
@@ -144,7 +147,8 @@ function initGui() {
 
 };
 
-function updateObjectMVMatrix(idx){
+function updateObjectMVMatrix(idx)
+{
     var trans     = Matrix.Translation(Vector.create(entities[idx].pos));
     var rotPhi    = Matrix.Rotation(entities[idx].rot[0] * Math.PI / 180.0, $V([0,1,0])).ensure4x4();
     var rotTheta  = Matrix.Rotation(entities[idx].rot[1] * Math.PI / 180.0, $V([1,0,0])).ensure4x4();

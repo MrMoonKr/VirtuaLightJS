@@ -33,13 +33,13 @@ out highp vec2 vTexCoords;
     https://gamedev.stackexchange.com/a/126115
 */
 
-void main(void) {
-
-    worldPos            = u_perDraw.transform.uModel * vec4(position, 1.0);
-    vNormal             = mat3(u_perDraw.transform.uModel) * normal;
-    vFragPosLightSpace  = u_perDraw.transform.uDepthMVP * vec4(position, 1.0);
+void main(void) 
+{
+    worldPos            = u_perDraw.transform.uModel * vec4( position, 1.0 );
+    vNormal             = mat3( u_perDraw.transform.uModel ) * normal;
+    vFragPosLightSpace  = u_perDraw.transform.uDepthMVP * vec4( position, 1.0 );
     vTexCoords          = aTexCoords;
 
-    gl_Position = u_perDraw.transform.uProjection * u_perDraw.transform.uView * worldPos;
+    gl_Position         = u_perDraw.transform.uProjection * u_perDraw.transform.uView * worldPos;
 }
 `;

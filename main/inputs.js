@@ -3,13 +3,14 @@ var isMouseRDown = false;
 var previousX;
 var previousY;
 
-function initInputs(){
+function initInputs()
+{
     canvas.addEventListener("mousemove", getCoords);
     canvas.addEventListener("mousedown", mouseDown);
     canvas.addEventListener("mouseup", mouseUp);
     canvas.addEventListener("mousewheel", mouseWheelHandler, false);
     canvas.addEventListener("dblclick", function() {screenfull.toggle()}, false);
-    screenfull.on('change', () => { handleFullscreenChange(); });
+    screenfull.on( 'change', () => { handleFullscreenChange(); } );
     document.addEventListener("keydown", keyboardHandler);
     canvas.addEventListener('contextmenu', function(e) {e.preventDefault();}, false);
     // Firefox...
@@ -96,17 +97,21 @@ function keyboardHandler(e) {
     return false;
 }
 
-function handleFullscreenChange(){
+function handleFullscreenChange()
+{
     // Do not select anythin or you won't be able to move the camera
     window.getSelection().removeAllRanges();
     
     // Change canvas size and style
-    if(screenfull.isFullscreen){
+    if ( screenfull.isFullscreen )
+    {
         canvas.width  = window.innerWidth;
         canvas.height = window.innerHeight;
         canvas.style.borderWidth = "0px";
-    }else{
-        canvas.width  = 640;
+    }
+    else
+    {
+        canvas.width  = 960;
         canvas.height = 480;
         canvas.style.borderWidth = "1px";
     }

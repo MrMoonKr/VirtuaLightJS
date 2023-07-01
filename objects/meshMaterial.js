@@ -1,6 +1,8 @@
-class MeshMaterial{
+class MeshMaterial
+{
 
-    constructor(material){
+    constructor(material)
+    {
 
         // Default texture first because loading might take a while
         this.albedo     = Texture.defaultTexture;
@@ -19,7 +21,8 @@ class MeshMaterial{
         }
     }
 
-    assignTexture(attribute, texturePath, isHDR){    
+    assignTexture(attribute, texturePath, isHDR)
+    {    
         // If no attribute is assigned, then the default texture is already in place and should stay that way
         if(!texturePath){
             return;
@@ -28,13 +31,15 @@ class MeshMaterial{
         let meshMat = this;
         let path = texturePath;
         // Assign only when the texture is loaded. through call back
-        new Texture(texturePath, isHDR, gl.REPEAT, gl.NEAREST, textureLoadCallback);
-        function textureLoadCallback(texture){
+        new Texture( texturePath, isHDR, gl.REPEAT, gl.NEAREST, textureLoadCallback );
+        function textureLoadCallback(texture)
+        {
             meshMat[attribute] = texture;
         }
     }
 
-    generateTextures(albedo, roughness, fresnel){
+    generateTextures(albedo, roughness, fresnel)
+    {
         // Textures with Uint8 take values between 0 and 255
         albedo = new Uint8Array(albedo.map(i => Math.min(i * 255.0, 255.0)));
         roughness = new Uint8Array(3).fill(Math.min(roughness * 255.0, 255.0));

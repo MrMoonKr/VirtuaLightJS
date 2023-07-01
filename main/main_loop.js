@@ -1,11 +1,14 @@
 var scene = {mode : 4};
 var depthVP;
 
-function drawScene() {
+
+function drawScene()
+{
     stats.begin();
 
     // mvMatrix contains the position of the camera, move it here
-    if(camera.shouldSetup){
+    if ( camera.shouldSetup )
+    {
         camera.setup();
         camera.shouldSetup = false;
     }
@@ -17,15 +20,18 @@ function drawScene() {
     render();
 
     // Pass 3: Render Skybox
-    if(skybox.program){
+    if ( skybox.program )
+    {
         drawSkybox();
     }
 
-    requestAnimationFrame(drawScene);
     stats.end();
+
+    requestAnimationFrame( drawScene );
 }
 
-function computeDepthMap(){
+function computeDepthMap()
+{
     gl.useProgram(depthProgram);
     // Activate front face culling to remove shadowmaps artifacts
     gl.cullFace(gl.FRONT);
@@ -42,7 +48,8 @@ function computeDepthMap(){
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 }
 
-function render(){
+function render()
+{
     gl.useProgram(shaderProgram);
     // Update lights and camera uniforms
     updateUniforms();
@@ -170,7 +177,8 @@ function updateUniforms(){
     }
 }
 
-function setTextures(material){
+function setTextures(material)
+{
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, depthMap);
 
@@ -199,10 +207,12 @@ function setTextures(material){
     gl.bindTexture(gl.TEXTURE_2D, skybox.brdfLUTTexture);
 }
 
-function updateSpinner(){
+function updateSpinner()
+{
     var loadPercent = document.getElementById("loadPercent");
-    loadPercent.textContent = Math.floor((Texture.nbTextureLoaded / Texture.nbTextureToLoad) * 100) + "%";
-    if(Texture.nbTextureLoaded == Texture.nbTextureToLoad){
+    loadPercent.textContent = Math.floor( ( Texture.nbTextureLoaded / Texture.nbTextureToLoad ) * 100 ) + "%";
+    if ( Texture.nbTextureLoaded == Texture.nbTextureToLoad )
+    {
         var spinner = document.getElementById("loader");
         spinner.parentNode.removeChild(spinner);
     }

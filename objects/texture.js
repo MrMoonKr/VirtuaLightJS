@@ -60,7 +60,8 @@ class Texture
         return texture;
     }
 
-    static loadDefaultTexture(){            
+    static loadDefaultTexture()
+    {            
         // Generate a 1*1 pixel white texture
         Texture.defaultTexture = Texture.generateTextureFromData(new Uint8Array([255.0, 255.0, 255.0]), 1, 1, false, gl.REPEAT, gl.NEAREST);
     }
