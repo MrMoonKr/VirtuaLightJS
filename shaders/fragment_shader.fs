@@ -18,7 +18,7 @@ struct LightSource
     vec3 color;
     float intensity;
     // Attenuation:
-    float aconst;
+    float aconst; 
     float alin;
     float aquad;
 };
@@ -76,74 +76,76 @@ vec4 tex2DBiLinear( sampler2D textureSampler_i, vec2 texCoord_i );
 vec4 BiCubic( sampler2D textureSampler, vec2 TexCoord );
 float CatMullRom( float f );
 
-void main(void) {
+void main( void ) 
+{
 
     vec3 LO = vec3(0.0);
     
-    vec3 pos = worldPos.xyz;
-    vec3 vNorm = normalize(vNormal);
-    vec3 excidentVector = normalize(camPos-pos);
+    vec3 pos            = worldPos.xyz;                 // world position of fragment
+    vec3 vNorm          = normalize( vNormal );         // world normal of fragment
+    vec3 excidentVector = normalize( camPos - pos );    // world view( to eye ) of fragment
 
     /*testIBL(1);
     return;*/
     
-    int nbLights = int(u_perPass.nbLights);
+    int nbLights    = int(u_perPass.nbLights);
 
-    vec3 albedo = pow(tex2DBiLinear(albedoMap, vTexCoords).rgb, vec3(gamma));
+    vec3 albedo     = pow(tex2DBiLinear(albedoMap, vTexCoords).rgb, vec3(gamma));
     float roughness = tex2DBiLinear(roughnessMap, vTexCoords).r;
-    float ao = tex2DBiLinear(aoMap, vTexCoords).r;
-    float fresnel = tex2DBiLinear(fresnelMap, vTexCoords).r;
-    vec3 normal = textureSize(normalMap, 0).x > 1 ? perturb_normal( vNorm, excidentVector, vTexCoords ) : vNorm;
+    float ao        = tex2DBiLinear(aoMap, vTexCoords).r;
+    float fresnel   = tex2DBiLinear(fresnelMap, vTexCoords).r;
+    vec3 normal     = textureSize(normalMap, 0).x > 1 ? perturb_normal( vNorm, excidentVector, vTexCoords ) : vNorm;
 
     // Fresnel f0 term
-    vec3 f0 = vec3(0.04); 
-    f0 = mix(f0, albedo, fresnel);
+    vec3 f0 = vec3( 0.04 ); 
+    f0 = mix( f0, albedo, fresnel );
 
-    for (int i=0 ; i<nbLights; i++){
-
-        if(distance(pos,u_perPass.lights[i].position) <= MAX_DIST ){
-            color = getLightColor(u_perPass.lights[i], pos);
+    for ( int i=0 ; i<nbLights ; i++ )
+    {
+        if ( distance( pos,u_perPass.lights[i].position ) <= MAX_DIST )
+        {
+            color = getLightColor( u_perPass.lights[i], pos );
             return;
         }
 
-        vec3 incidentVector = normalize(u_perPass.lights[i].position-pos);
-        float directionnalAttenuation = max(dot(normal, incidentVector), 0.0);
+        vec3 incidentVector = normalize( u_perPass.lights[i].position - pos );
+        float directionnalAttenuation = max( dot( normal, incidentVector ), 0.0 );
 
-        vec3 kS = fresnelSchlick(incidentVector, excidentVector, f0);
-        vec3 kD = vec3(1.0) - kS;
-        kD *= 1.0 - fresnel;
+        vec3 kS = fresnelSchlick( incidentVector, excidentVector, f0 );
+        vec3 kD = vec3( 1.0 ) - kS;
+        kD *= 1.0 - fresnel; // fresnel is metallic, 
 
-        vec3 specular = microFacetSpecular(incidentVector,excidentVector,normal,kS,roughness, 2);
-        vec3 radiance = vec3(u_perPass.lights[i].color) * getIntensityFromPosition(u_perPass.lights[i],pos);
+        vec3 specular = microFacetSpecular( incidentVector, excidentVector, normal, kS, roughness, 2 );
+        vec3 radiance = vec3( u_perPass.lights[i].color ) * getIntensityFromPosition( u_perPass.lights[i], pos );
 
-        LO += (kD * albedo / M_PI + specular) * radiance * directionnalAttenuation;
+        LO += ( kD * albedo / M_PI + specular ) * radiance * directionnalAttenuation ;
     }
 
-    vec3 kS = fresnelSchlickRoughness(max(dot(normal, excidentVector), 0.0), f0, roughness); 
+    vec3 kS = fresnelSchlickRoughness( max( dot( normal, excidentVector ), 0.0 ), f0, roughness ); 
     vec3 kD = 1.0 - kS;
     kD *= 1.0 - fresnel;
 
-    vec3 irradiance = texture(environmentMap, normal).rgb;
+    vec3 irradiance = texture( environmentMap, normal ).rgb;
     vec3 ambientDiffuse = kD * irradiance * albedo;
 
     const float MAX_REFLECTION_LOD = 4.0;
-    vec3 reflectionVector = reflect(-excidentVector, normal);
-    vec3 prefilteredColor = textureLod(prefilterMap, reflectionVector,  roughness * MAX_REFLECTION_LOD).rgb;    
-    vec2 brdf  = texture(brdfLUT, vec2(max(dot(normal, excidentVector), 0.0), roughness)).rg;
+    vec3 reflectionVector = reflect( -excidentVector, normal );
+    vec3 prefilteredColor = textureLod( prefilterMap, reflectionVector,  roughness * MAX_REFLECTION_LOD ).rgb;    
+    vec2 brdf  = texture( brdfLUT, vec2( max( dot( normal, excidentVector ), 0.0 ), roughness ) ).rg;
     vec3 ambientSpecular = prefilteredColor * (kS * brdf.x + brdf.y);
     
     //float ambientIntensity = pow(1.0, 1.0/gamma);
-    vec3 ambient = (ambientDiffuse + ambientSpecular) * ao * ambientIntensity;
+    vec3 ambient = ( ambientDiffuse + ambientSpecular ) * ao * ambientIntensity;
 
     // Shadow computation
-    vec3 lightDir = normalize(u_perPass.lights[nbLights-1].position-pos);
-    float shadowFactor = ShadowCalculation(vFragPosLightSpace, vNorm, lightDir);
+    vec3 lightDir       = normalize( u_perPass.lights[nbLights-1].position - pos );
+    float shadowFactor  = ShadowCalculation( vFragPosLightSpace, vNorm, lightDir );
     // Interpolation indicator gamma corrected
-    float inter = pow(u_perPass.lights[nbLights-1].intensity / 200.0, 1.0/gamma);
+    float inter         = pow( u_perPass.lights[nbLights-1].intensity / 200.0, 1.0 / gamma );
     // Make shadows disapear as the lights goes dim
-    shadowFactor = shadowFactor == 1.0 ? shadowFactor : mix(1.0,shadowFactor,inter);
+    shadowFactor        = shadowFactor == 1.0 ? shadowFactor : mix( 1.0, shadowFactor, inter );
 
-    vec3 resultingColor = (ambient + LO) * shadowFactor; 
+    vec3 resultingColor = ( ambient + LO ) * shadowFactor; 
 
     // Debug: print numbers
     /*vec2 vFontSize = vec2(8.0, 15.0);
@@ -152,17 +154,18 @@ void main(void) {
 
     // Exposure tone mapping
     //float exposure = 1.0; // => should be a uniform
-    resultingColor = vec3(1.0) - exp(-resultingColor * exposure);
+    resultingColor = vec3( 1.0 ) - exp( -resultingColor * exposure );
     // Gamma correction
-    resultingColor = pow(resultingColor, vec3(1.0/gamma));
+    resultingColor = pow( resultingColor, vec3( 1.0 / gamma ) );
     
-    color = vec4(resultingColor,1.0);
+    color = vec4( resultingColor, 1.0 );
 
 }
 
 // Light intensity attenuation
-vec3 getIntensityFromPosition(LightSource l, vec3 pos){
-    float d = distance(l.position,pos);
+vec3 getIntensityFromPosition( LightSource l, vec3 pos )
+{
+    float d = distance( l.position, pos );
     float intFromDist = l.intensity / (l.aconst + l.alin*d + l.aquad*d*d);
     //float intFromDist = 1.0 / (d*d);
     return l.color * intFromDist;
@@ -197,7 +200,8 @@ vec3 microFacetSpecular(vec3 incidentVector, vec3 excidentVector, vec3 normal, v
         geometry = min(min(ombrage,masquage),float(1.0));
     }
     // GGX distribution
-    else if(distriNbr==2){
+    else if(distriNbr==2)
+    {
         // GGX => roughness power 4? I thought it was 2
         float denominator = M_PI * pow(1.0+(roughnessSquared*roughnessSquared-1.0)*normDotHalfSquared,2.0);
         distribution = roughnessSquared / denominator;
@@ -209,7 +213,9 @@ vec3 microFacetSpecular(vec3 incidentVector, vec3 excidentVector, vec3 normal, v
         float geoExc = normDotExc / (normDotExc * (1.0 - k) + k);
         geometry = geoInc * geoExc;
     }
-    else{
+    else
+    {
+
         distribution = 1.0;
         geometry = 1.0;
     }
@@ -220,25 +226,35 @@ vec3 microFacetSpecular(vec3 incidentVector, vec3 excidentVector, vec3 normal, v
     return numerator / denominator;
 }
 
-vec3 fresnelSchlick(vec3 incidentVector, vec3 excidentVector, vec3 f0)
+/*
+ * L, N, V, H
+ */
+vec3 fresnelSchlick( vec3 incidentVector, vec3 excidentVector, vec3 f0 )
 {
-    vec3 halfVec = (incidentVector + excidentVector) / length(incidentVector + excidentVector);
-    vec3 schlick = f0 + (1.0-f0)*pow(1.0-max(0.0f,dot(incidentVector,halfVec)),5.0);
+    vec3 halfVec = ( incidentVector + excidentVector ) / length( incidentVector + excidentVector );
+    vec3 schlick = f0 + ( 1.0- f0 ) * pow( 1.0 - max( 0.0f, dot( incidentVector, halfVec ) ), 5.0 );
     return schlick;
 }
 
-vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
+/*
+ * L, N, V, H
+ */
+vec3 fresnelSchlickRoughness( float cosTheta, vec3 F0, float roughness )
 {
-    return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(1.0 - cosTheta, 5.0);
+    return F0 + ( max( vec3( 1.0 - roughness ), F0 ) - F0 ) * pow( 1.0 - cosTheta, 5.0 );
 }  
 
-vec4 getLightColor(LightSource l, vec3 pos){
-    if(distance(pos,l.position) >= MAX_DIST*0.8 ){
-        return vec4(0.0,0.0,0.0,1.0);
-    }else{
+vec4 getLightColor( LightSource l, vec3 pos )
+{
+    if ( distance( pos, l.position ) >= MAX_DIST*0.8 )
+    {
+        return vec4( 0.0, 0.0, 0.0, 1.0 );
+    }
+    else
+    {
         // Gamma correction to properly display light intensity influence lmao
-        float fact = pow(l.intensity / 150.0, 1.0/gamma);
-        return vec4(l.color * fact, 1.0);
+        float fact = pow( l.intensity / 150.0, 1.0 / gamma );
+        return vec4( l.color * fact, 1.0 );
     }
 }
 
@@ -282,7 +298,8 @@ vec2 SampleSphericalMap(vec3 v)
     return uv;
 }
 
-void testIBL(int face){
+void testIBL(int face)
+{
 
     float a,b,c,d;
     a = (gl_FragCoord.x / 640.0) - 0.5;
@@ -317,31 +334,38 @@ void testIBL(int face){
 }
 
 // Blaise-Guthmann texture filtering
-vec3 tex2DBlaiseGuthmann(sampler2D textureMap, vec2 off){
+vec3 tex2DBlaiseGuthmann( sampler2D textureMap, vec2 off )
+{
     //vec2 off = 2.999 * texelSize / 2.0;
     //vec2 off = vTexCoords;
-    vec2 texelSize = 1.0 / vec2(textureSize(textureMap, 0));
-    vec2 texelNumber = floor(off / texelSize);
-    vec2 xy = 2.0 * (off - texelNumber*texelSize) / texelSize;
+    vec2 texelSize      = 1.0 / vec2( textureSize( textureMap, 0 ) );
+    vec2 texelNumber    = floor( off / texelSize );
+    vec2 xy             = 2.0 * ( off - texelNumber * texelSize ) / texelSize;
 
     vec3 ta,tx,ty,tc;
     float xoff = xy.x > 1.0 ? 1.0 : -1.0;
     float yoff = xy.y > 1.0 ? 1.0 : -1.0;
 
-    ta = texture(textureMap, off).rgb;
+    ta = texture( textureMap, off ).rgb;
 
-    if(xy.x>=1.0){
+    if ( xy.x >= 1.0 )
+    {
         xy.x-=1.0;
         tx = texture(textureMap, off + vec2(texelSize.x,0.0)).rgb;
-    }else{
+    }
+    else
+    {
         xy.x = 1.0 - xy.x;
         tx = texture(textureMap, off - vec2(texelSize.x,0.0)).rgb;
     }
 
-    if(xy.y>=1.0){
+    if(xy.y>=1.0)
+    {
         xy.y-=1.0;
         ty = texture(textureMap, off + vec2(0.0,texelSize.y)).rgb;
-    }else{
+    }
+    else
+    {
         xy.y = 1.0 - xy.y;
         ty = texture(textureMap, off - vec2(0.0,texelSize.y)).rgb;
     }

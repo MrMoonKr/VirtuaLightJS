@@ -17,7 +17,8 @@ function initInputs()
     canvas.addEventListener("DOMMouseScroll", mouseWheelHandler, false);
 }
 
-function getCoords(e) {
+function getCoords( e )
+{
     // No buttons pressed
     if(e.buttons == 0){
         return;

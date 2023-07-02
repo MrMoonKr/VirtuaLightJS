@@ -1,3 +1,5 @@
+//import * as dat from 'dat.gui';
+
 // FPS counter
 var stats;
 var guiObj = {

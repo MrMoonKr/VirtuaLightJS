@@ -1,7 +1,15 @@
+/// <reference path="../utils/glUtils.js" />
+/// <reference path="./gui.js" />
+/// <reference path="./inputs.js" />
+/// <reference path="./startup.js" />
+
+
 var scene = {mode : 4};
 var depthVP;
 
-
+/**
+ * 전체 씬 렌더링 함수.
+ */
 function drawScene()
 {
     stats.begin();

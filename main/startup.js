@@ -1,17 +1,41 @@
+/// <reference path="../utils/custom_utils.js" />
+/// <reference path="../utils/glUtils.js" />
+/// <reference path="../utils/matrix_utility.js" />
+/// <reference path="../objects/camera.js" />
+/// <reference path="../objects/entity.js" />
+/// <reference path="../objects/lightsource.js" />
+/// <reference path="../objects/mesh.js" />
+/// <reference path="../objects/meshMaterial.js" />
+/// <reference path="../objects/texture.js" />
+/// <reference path="./main_loop.js" />
+
+
 // Webgl program
 /**
  * @type { WebGL2RenderingContext }
  */
 var gl;
 // Shader programs
+/**
+ * @type {WebGLProgram} PBR shader program
+ */
 var shaderProgram;
+/**
+ * @type {WebGLProgram} depth shader program
+ */
 var depthProgram;
 
 // Shadowmap size
-var shadowSize = {SHADOW_WIDTH : 1024, SHADOW_HEIGHT : 1024};   // 640 * 480
+var shadowSize = { SHADOW_WIDTH : 1024, SHADOW_HEIGHT : 1024 };   // 640 * 480
 // Shadowmap FBO
+/**
+ * @type {WebGLFramebuffer} 그림자용 깊이 텍스쳐용 프레임버퍼.
+ */
 var depthMapFBO;
 // Shadowmap texture
+/**
+ * @type {WebGLTexture} 깊이 텍스쳐 객체.
+ */
 var depthMap;
 // Uniform to update shadow map location in fragment shader
 var shadowMapUniform;
@@ -22,6 +46,9 @@ var shadowMapUniform;
  */
 var canvas;
 // Camera
+/**
+ * @type {Camera}
+ */
 var camera;
 
 // Projection matrix
@@ -51,7 +78,8 @@ var max_lights = 5;
 var cubeSize = 0.2;
 
 // All the infos relevant to the skybox
-var skybox = {
+var skybox = 
+{
     mesh            : 0,
     envCubemap      : 0,
     irradianceMap   : 0,
@@ -65,50 +93,53 @@ var skybox = {
     res             : 1024
 }
 
-var rendering = {
+var rendering = 
+{
     exposure : {value : 1.0, uniform : undefined},
     gamma : {value : 2.2, uniform : undefined},
     ambientIntensity : {value : 1.0, uniform : undefined},
     hasChanged : false
 }
 
-function start() {
-
+function start() 
+{
     canvas = document.getElementById('glCanvas');
     camera = new Camera();
     
     // Initialize the GL context
     gl = canvas.getContext( 'webgl2', { antialias: true } );
     var isWebGL2 = !!gl;
-    if(!isWebGL2) {
+    if ( !isWebGL2 ) 
+    {
         alert("Your browser does not support WebGL2 :/");
         return;
     }
 
     // Only continue if WebGL is available and working
-    if (!gl) {
+    if ( !gl )
+    {
         return;
     }
 
     // Enable depth testing
-    gl.enable(gl.DEPTH_TEST);
+    gl.enable( gl.DEPTH_TEST );
     // Near things obscure far things
-    gl.depthFunc(gl.LEQUAL);
+    gl.depthFunc( gl.LEQUAL );
     // Enable culling 
-    gl.enable(gl.CULL_FACE);
+    gl.enable( gl.CULL_FACE );
     // Cull only back faces
-    gl.cullFace(gl.BACK);
+    gl.cullFace( gl.BACK );
     // Set clear color to light blue
-    gl.clearColor(0.0, 0.0, 1.0, 0.1);
+    gl.clearColor( 0.0, 0.0, 1.0, 0.1 );
     // Clear the color as well as the depth buffer.
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);  
+    gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
 
     // Initiate shaders
-    shaderProgram = initShaders(vertex_shader, fragment_shader);
-    gl.useProgram(shaderProgram);
+    shaderProgram = initShaders( vertex_shader, fragment_shader );
+    gl.useProgram( shaderProgram );
 
     // Init skybox / Irradiance
-    initSkybox("ibl/desert/desert.hdr", true);
+    initSkybox( "ibl/desert/desert.hdr", true );
     //initSkybox("ibl/hantel.jpg", false);
 
     // Set texture uniforms
@@ -134,6 +165,7 @@ function start() {
             initBuffers( entities[i].mesh, verticesBuffer, verticesIndexBuffer, verticesNormalBuffer, verticesTexCoordsBuffer );
             // Init VAO
             vaos.push( initVAO( verticesBuffer, verticesIndexBuffer, verticesNormalBuffer, verticesTexCoordsBuffer, true ) );
+
             // Init DepthVAO
             depthVaos.push( initVAO( verticesBuffer, verticesIndexBuffer ) );
         }
@@ -148,21 +180,29 @@ function start() {
     // Load depth shaders, generate depth texture and framebuffer to compute shadow maps
     initShadowMapFrameBuffer();
 
-    console.log("Main initialization done");
+    console.log( "Main initialization done" );
 
     // The scene will be drawn only if the default texture is loaded
     drawSceneIfReady();
 }
 
+/**
+ * 셰이더프로그램 생성
+ * @param {string} vs vertex shader code
+ * @param {string} fs fragment shader code
+ * @returns {WebGLProgram}
+ */
 function initShaders( vs, fs )
 {
-    vs = vs.replace(/^\s+|\s+$/g, '');
-    fs = fs.replace(/^\s+|\s+$/g, '');
+    vs = vs.replace( /^\s+|\s+$/g, '' );
+    fs = fs.replace( /^\s+|\s+$/g, '' );
+    
     var prog = createProgram( gl, vs, fs );
 
     // If creating the shader program failed, alert
-    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
-        console.log('Unable to initialize the shader program: ' + gl.getProgramInfoLog(prog));
+    if ( !gl.getProgramParameter( prog, gl.LINK_STATUS ) ) 
+    {
+        console.log( 'Unable to initialize the shader program: ' + gl.getProgramInfoLog( prog ) );
     }
 
     return prog;
@@ -175,7 +215,7 @@ function initShaders( vs, fs )
  * @param {string} fragmentShaderSource 
  * @returns {WebGLProgram}
  */
-window.createProgram = function( gl, vertexShaderSource, fragmentShaderSource )
+function createProgram( gl, vertexShaderSource, fragmentShaderSource )
 {
     var program = gl.createProgram();
     var vshader = createShader( gl, vertexShaderSource, gl.VERTEX_SHADER );
@@ -204,6 +244,42 @@ window.createProgram = function( gl, vertexShaderSource, fragmentShaderSource )
     return program;
 };
 
+// /**
+//  * 
+//  * @param {WebGL2RenderingContext} gl 
+//  * @param {string} vertexShaderSource 
+//  * @param {string} fragmentShaderSource 
+//  * @returns {WebGLProgram}
+//  */
+// window.createProgram = function( gl, vertexShaderSource, fragmentShaderSource )
+// {
+//     var program = gl.createProgram();
+//     var vshader = createShader( gl, vertexShaderSource, gl.VERTEX_SHADER );
+//     var fshader = createShader( gl, fragmentShaderSource, gl.FRAGMENT_SHADER );
+//     gl.attachShader(program, vshader);
+//     gl.deleteShader(vshader);
+//     gl.attachShader(program, fshader);
+//     gl.deleteShader(fshader);
+//     gl.linkProgram(program);
+
+//     var log = gl.getProgramInfoLog(program);
+//     if (log) {
+//         console.log(log);
+//     }
+
+//     log = gl.getShaderInfoLog(vshader);
+//     if (log) {
+//         console.log(log);
+//     }
+
+//     log = gl.getShaderInfoLog(fshader);
+//     if (log) {
+//         console.log(log);
+//     }
+
+//     return program;
+// };
+
 /**
  * 
  * @param {WebGL2RenderingContext} gl 
@@ -219,20 +295,26 @@ function createShader( gl, source, type )
     return shader;
 }
 
+/**
+ * 텍스쳐 샘플러에게 텍스쳐 번호 설정.
+ */
 function setSamplerUniforms()
 {
-    gl.uniform1i( gl.getUniformLocation( shaderProgram, 'shadowMap' ), 0 );
-    gl.uniform1i( gl.getUniformLocation( shaderProgram, "albedoMap" ), 1 );
-    gl.uniform1i( gl.getUniformLocation( shaderProgram, "normalMap" ), 2 );
-    gl.uniform1i( gl.getUniformLocation( shaderProgram, "roughnessMap" ), 3 );
-    gl.uniform1i( gl.getUniformLocation( shaderProgram, "aoMap" ), 4 );
-    gl.uniform1i( gl.getUniformLocation( shaderProgram, "fresnelMap" ), 5 );
+    gl.uniform1i( gl.getUniformLocation( shaderProgram, 'shadowMap' ),      0 );
+    gl.uniform1i( gl.getUniformLocation( shaderProgram, "albedoMap" ),      1 );
+    gl.uniform1i( gl.getUniformLocation( shaderProgram, "normalMap" ),      2 );
+    gl.uniform1i( gl.getUniformLocation( shaderProgram, "roughnessMap" ),   3 );
+    gl.uniform1i( gl.getUniformLocation( shaderProgram, "aoMap" ),          4 );
+    gl.uniform1i( gl.getUniformLocation( shaderProgram, "fresnelMap" ),     5 );
     gl.uniform1i( gl.getUniformLocation( shaderProgram, 'environmentMap' ), 6 );
-    gl.uniform1i( gl.getUniformLocation( shaderProgram, 'prefilterMap' ), 7 );
-    gl.uniform1i( gl.getUniformLocation( shaderProgram, 'brdfLUT' ), 8 );
+    gl.uniform1i( gl.getUniformLocation( shaderProgram, 'prefilterMap' ),   7 );
+    gl.uniform1i( gl.getUniformLocation( shaderProgram, 'brdfLUT' ),        8 );
 }
 
 // This might be used to synchronize several asynchronous functions, not used anymore
+/**
+ * drawScene() 함수 호출
+ */
 function drawSceneIfReady()
 {
 
@@ -254,6 +336,9 @@ function drawSceneIfReady()
     }
 }
 
+/**
+ * 메시 로딩
+ */
 function loadObjects()
 {
     var debug = 1;
@@ -388,11 +473,11 @@ function loadObjects()
     //entities[entities.length-1].scale = 0.1;
 
     // Gun
-    material = new MeshMaterial(mats.gun);
-    mesh = new Mesh(material);
-    mesh.loadPly(gunjs);
-    entities.push(new Entity(mesh, "Gun", Matrix.I(4)));
-    entities[entities.length-1].pos = [ 0, 0.5, -2 ];
+    material = new MeshMaterial( mats.gun );
+    mesh = new Mesh( material );
+    mesh.loadPly( gunjs );
+    entities.push( new Entity( mesh, "Gun", Matrix.I(4) ) );
+    entities[ entities.length-1 ].pos = [ 0, 0.5, -2 ];
 
     // Gold sphere
     material = new MeshMaterial(mats.gold);
@@ -404,12 +489,12 @@ function loadObjects()
     entities[entities.length-1].scale = 0.5;
 
     // Create a plan underneath both objects
-    material = new MeshMaterial(mats.floor);
+    material = new MeshMaterial( mats.floor );
     // Override metallic property as it is fully metal by default
-    material.fresnel = Texture.generateTextureFromData(new Uint8Array(3).fill(0.0), 1, 1, false, gl.REPEAT, gl.NEAREST);
+    material.fresnel = Texture.generateTextureFromData( new Uint8Array(3).fill(0.0), 1, 1, false, gl.REPEAT, gl.NEAREST);
     mesh = new Mesh(material);
-    mesh.makePlan(3.0, 50);
-    entities.push(new Entity(mesh, "Floor", Matrix.I(4)));
+    mesh.makePlan( 3.0, 50 );
+    entities.push( new Entity( mesh, "Floor", Matrix.I(4) ) );
 
     // BACKGROUND PLAN
     material = new MeshMaterial(mats.background);
@@ -420,11 +505,14 @@ function loadObjects()
     entities[entities.length-1].rot = [0,90,0];
     entities[entities.length-1].scale = 1.5;
 
-    //PBRScale(7, 7, spherejs)
+    //PBRScale( 7, 7, spherejs )
+    //PBRScale( 7, 7, balljs )
+
     
 }
 
-function PBRScale(nrRows, nrColumns, model){
+function PBRScale( nrRows, nrColumns, model )
+{
     var spacing = 2.5;
     for (var row = 0; row < nrRows; ++row)
     {
@@ -436,7 +524,7 @@ function PBRScale(nrRows, nrColumns, model){
             material.generateTextures([0.996,0.805,0.406],bRoughness,bFresnel);
             mesh = new Mesh(material);
             mesh.loadPly(model);
-            entities.push(new Entity(mesh, "Ball - " + row + "" + col, Matrix.I(4)));
+            entities.push( new Entity( mesh, "Ball - " + row + "" + col, Matrix.I(4) ) );
             entities[entities.length-1].pos = [(col - (nrColumns / 2)) * spacing, (row - (nrRows / 2)) * spacing ,-2];
         }
     }
@@ -819,43 +907,46 @@ function initBrdfLut()
 function initShadowMapFrameBuffer()
 {
     // Init depth shaders for shadow maps
-    depthProgram = initShaders(depth_vertex_shader, depth_fragment_shader);
+    depthProgram = initShaders( depth_vertex_shader, depth_fragment_shader );
 
     // Generate depth texture
     depthMap = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, depthMap);
-    gl.texImage2D(gl.TEXTURE_2D,
+    gl.bindTexture( gl.TEXTURE_2D, depthMap );
+    gl.texImage2D( gl.TEXTURE_2D,
         0,
-        gl.DEPTH_COMPONENT32F,      // uint16 vs float32?
+        gl.DEPTH_COMPONENT32F, // uint16 vs float32?
         shadowSize.SHADOW_WIDTH,
         shadowSize.SHADOW_HEIGHT,
         0,
         gl.DEPTH_COMPONENT,
         gl.FLOAT,
-        null);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_MODE, gl.COMPARE_REF_TO_TEXTURE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_FUNC, gl.LEQUAL); 
+        null );
+    gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT );
+    gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT );
+    gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST );
+    gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
+    gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_COMPARE_MODE, gl.COMPARE_REF_TO_TEXTURE );
+    gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_COMPARE_FUNC, gl.LEQUAL );
 
     // Generate frame buffer
     depthMapFBO = gl.createFramebuffer();
-    gl.bindFramebuffer(gl.FRAMEBUFFER, depthMapFBO);
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, depthMap, 0);
-    gl.drawBuffers([gl.NONE]);
-    gl.readBuffer(gl.NONE);
-    
-    var status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
-    if (status != gl.FRAMEBUFFER_COMPLETE) {
-        console.log('fb status: ' + status.toString(16));
+    gl.bindFramebuffer( gl.FRAMEBUFFER, depthMapFBO );
+    gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, depthMap, 0 );
+    gl.drawBuffers( [ gl.NONE ] );
+    gl.readBuffer( gl.NONE );
+
+    var status = gl.checkFramebufferStatus( gl.FRAMEBUFFER );
+    if ( status != gl.FRAMEBUFFER_COMPLETE ) 
+    {
+        console.log( 'fb status: ' + status.toString( 16 ) );
         return;
     }
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+    gl.bindFramebuffer( gl.FRAMEBUFFER, null ); // 클리어
+    gl.bindTexture( gl.TEXTURE_2D, null );
 }
 
-function createMatrixTransforms(prog, uboIdx)
+function createMatrixTransforms( prog, uboIdx )
 {
     pMatrix = makePerspective( camera.fovAngle, canvas.clientWidth / canvas.clientHeight , camera.nearPlane, camera.farPlane );
     
@@ -911,6 +1002,11 @@ function getUBOPadding(data, prog, uboIdx){
     }
 }
 
+/**
+ * 라이트 위치 표시용 박스객체 생성
+ * @param {glm.vec3} lightPos 
+ * @param {*} i 
+ */
 function enableLightDisplay( lightPos, i )
 {
     
@@ -923,6 +1019,7 @@ function enableLightDisplay( lightPos, i )
         mesh = undefined;
         entityName = "Sun";
     }
+
     var entity = new Entity( mesh, entityName, Matrix.Translation( Vector.create( lightPos ) ) );
     entities.push( entity );
 }
