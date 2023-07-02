@@ -1,0 +1,1 @@
+console.log( 'WebGL2 개발환경 구축 완료' );

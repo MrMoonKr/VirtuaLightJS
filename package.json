@@ -1,0 +1,23 @@
+{
+  "name": "virtualightjs",
+  "version": "1.0.0",
+  "description": "A Physically Based Rendering engine created from scratch in WebGL2, compatible with at least Windows and Linux. (Smartphones not supported, can't test on macOS)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "rimraf": "^5.0.1",
+    "webpack": "^5.88.1",
+    "webpack-cli": "^5.1.4",
+    "webpack-glsl-loader": "^1.0.1"
+  },
+  "dependencies": {
+    "dat.gui": "^0.7.9",
+    "gl-matrix": "^3.4.3",
+    "stats": "^1.0.0"
+  }
+}
