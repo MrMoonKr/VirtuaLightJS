@@ -1,0 +1,166 @@
+<html>
+
+<head>
+    <title>WebGL PBR</title>
+
+    <link rel="stylesheet" href="./index.css">
+    <script type="text/javascript" src="./index.js"></script>
+    <!-- <script type="module" src="./index.js"></script> -->
+</head>
+
+<body>
+    <div id="WholeWindow">
+
+        <canvas id="RenderWindow" onclick="OnRenderWindowClick()"></canvas>
+        <!-- <canvas id="RenderWindow"></canvas> -->
+
+        <!--span id="LogDisplay"></span-->
+        <span id="FPSDisplay">(?x?) FPS: ---</span>
+        <span id="CameraPosDisplay">Camera: (0.00,0.00,0.00)</span>
+        <span id="Loading">Loading</span>
+        <span id="DebugPanel">
+            <a href="#" id="DebugPanelCollapseIcon" onClick="ToggleDebugPanel(); return false;">[close] Debug Panel</a>
+            <span id="DebugPanelControls">
+                <hr>
+                <table>
+                    <tr>
+                        <td><input type="checkbox" id="Debug_Wireframe" /></td>
+                        <td>Wireframe</td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" id="Debug_DrawPointLights" checked="true"/></td>
+                        <td>Draw Point Lights</td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" id="Debug_UseColoredLights" /></td>
+                        <td>Colored Lights</td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" id="Debug_AnimateLights" checked="true" /></td>
+                        <td>Animate Lights</td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" id="Debug_PointLight0" checked="true" /></td>
+                        <td>Point Light 0</td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" id="Debug_PointLight1" checked="true" /></td>
+                        <td>Point Light 1</td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" id="Debug_PointLight2" checked="true"/></td>
+                        <td>Point Light 2</td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" id="Debug_PointLight3" /></td>
+                        <td>Point Light 3</td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" id="Debug_DirectionalLight" /></td>
+                        <td>Directional Light</td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" id="Debug_AnimateObjects" checked="true" /></td>
+                        <td>Animate Objects</td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" id="Debug_NormalMapping" checked="true" /></td>
+                        <td>Normal Mapping</td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" id="Debug_LightDirType" /></td>
+                        <td>Alternate BRDF</td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" id="Debug_AO" checked="true" /></td>
+                        <td>Ambient Occlusion</td>
+                    </tr>
+                </table>
+                <table>
+                    <tr>
+                        <td>Draw</td>
+                        <td>
+                            <select id="Debug_SceneSingle">
+                                <option value="0">PBR Grid of</option>
+                                <option value="1">Grid of</option>
+                                <option value="2">Cube of</option>
+                                <option value="3" selected="true">Single</option>
+                            </select>
+                            <select id="Debug_SceneMaterial">
+                                
+                            </select>
+                            <select id="Debug_SceneObject">
+                                <option value="0">Sphere</option>
+                                <option value="1">Cube</option>
+                                <option value="2">Tetrahedron</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Scene (IBL)</td>
+                        <td>
+                            <select id="Debug_SceneIBL"></select>
+                            <select id="Debug_SceneIBLWhich">
+                                <option value="0">Skybox</option>
+                                <option value="1">Diffuse</option>
+                                <option value="2">Specular Mip 0 (0% Roughness)</option>
+                                <option value="3">Specular Mip 1 (25% Roughness)</option>
+                                <option value="4">Specular Mip 2 (50% Roughness)</option>
+                                <option value="5">Specular Mip 3 (75% Roughness)</option>
+                                <option value="6">Specular Mip 4 (100% Roughness)</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Metallic</td>
+                        <td><input id="Debug_Metallic" type="range" min="0" max="2" value="1.0" step="0.01" /> <input
+                                type="button" onClick="document.getElementById('Debug_Metallic').value=1.0;"
+                                value="Reset" /></td>
+                    </tr>
+                    <tr>
+                        <td>Roughness</td>
+                        <td><input id="Debug_Roughness" type="range" min="0" max="2" value="1.0" step="0.01" /> <input
+                                type="button" onClick="document.getElementById('Debug_Roughness').value=1.0;"
+                                value="Reset" /></td>
+                    </tr>
+                    <tr>
+                        <td>Base Reflectance</td>
+                        <td><input id="Debug_F0" type="range" min="0" max="1" value="0.04" step="0.01" /> <input
+                                type="button" onClick="document.getElementById('Debug_F0').value=0.04;" value="Reset" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Albedo R</td>
+                        <td><input id="Debug_AlbedoR" type="range" min="0" max="1" value="1.0" step="0.01" /></td>
+                    </tr>
+                    <tr>
+                        <td>Albedo G</td>
+                        <td><input id="Debug_AlbedoG" type="range" min="0" max="1" value="1.0" step="0.01" /></td>
+                    </tr>
+                    <tr>
+                        <td>Albedo B</td>
+                        <td><input id="Debug_AlbedoB" type="range" min="0" max="1" value="1.0" step="0.01" /></td>
+                    </tr>
+                    <tr>
+                        <td>Output</td>
+                        <td>
+                            <select id="Debug_OutputMode">
+                                <option value="0">Shaded</option>
+                                <option value="1">Albedo</option>
+                                <option value="2">Normal</option>
+                                <option value="3">Metallic</option>
+                                <option value="4">Roughness</option>
+                                <option value="5">Emissive</option>
+                                <option value="6">AO</option>
+                            </select>
+                        </td>
+                    </tr>
+                </table>
+                <br><br>
+                Written by Alan Wolfe (<a target="_blank" href="https://twitter.com/Atrix256">@Atrix256</a>)<br>
+                Details: <a target="_blank"
+                    href="https://blog.demofox.org/2017/07/10/webgl-pbr-implementation/" />https://blog.demofox.org/2017/07/10/webgl-pbr-implementation/</a>
+            </span>
+        </span>
+    </div>
+</body>

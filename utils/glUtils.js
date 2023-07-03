@@ -1,3 +1,6 @@
+/// <reference path="../libs/sylvester.js" />
+
+
 // augment Sylvester some
 Matrix.Translation = function (v)
 {
@@ -104,9 +107,9 @@ function makeLookAt(ex, ey, ez,
                     cx, cy, cz,
                     ux, uy, uz)
 {
-    var eye = $V([ex, ey, ez]);
-    var center = $V([cx, cy, cz]);
-    var up = $V([ux, uy, uz]);
+    var eye     = $V([ex, ey, ez]);
+    var center  = $V([cx, cy, cz]);
+    var up      = $V([ux, uy, uz]);
 
     return makeLookAtVector(eye, center, up);
 }

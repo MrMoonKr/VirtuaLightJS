@@ -27,7 +27,8 @@ class Mesh {
         this.recomputeNormalsSimple ();
     }
 
-    loadPly(filename){
+    loadPly( filename )
+    {
         this.clear();
 
         var sizeV, sizeT, tmp;

@@ -1,4 +1,5 @@
 //import * as dat from 'dat.gui';
+/// <reference path="../libs/sylvester.js" />
 
 // FPS counter
 var stats;
@@ -149,11 +150,16 @@ function initGui()
 
 };
 
-function updateObjectMVMatrix(idx)
+/**
+ * 메시객체의 월드변환행렬 업데이트. ( 크기, 회전, 위치 )
+ * @param {*} idx 
+ */
+function updateObjectMVMatrix( idx )
 {
-    var trans     = Matrix.Translation(Vector.create(entities[idx].pos));
-    var rotPhi    = Matrix.Rotation(entities[idx].rot[0] * Math.PI / 180.0, $V([0,1,0])).ensure4x4();
-    var rotTheta  = Matrix.Rotation(entities[idx].rot[1] * Math.PI / 180.0, $V([1,0,0])).ensure4x4();
-    var scale     = Matrix.Diagonal([entities[idx].scale, entities[idx].scale, entities[idx].scale, 1]);
-    entities[idx].mvMatrix = trans.x(rotTheta).x(rotPhi).x(scale).x(Matrix.I(4));
+    var trans       = Matrix.Translation( Vector.create( entities[ idx ].pos ) );
+    var rotPhi      = Matrix.Rotation( entities[ idx ].rot[ 0 ] * Math.PI / 180.0, $V( [ 0, 1, 0 ] ) ).ensure4x4();
+    var rotTheta    = Matrix.Rotation( entities[ idx ].rot[ 1 ] * Math.PI / 180.0, $V( [ 1, 0, 0 ] ) ).ensure4x4();
+    var scale       = Matrix.Diagonal( [ entities[ idx ].scale, entities[ idx ].scale, entities[ idx ].scale, 1 ] );
+
+    entities[ idx ].mvMatrix = trans.x( rotTheta ).x( rotPhi ).x( scale ).x( Matrix.I( 4 ) );
 }
