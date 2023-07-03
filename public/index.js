@@ -3193,6 +3193,7 @@ function Initialize() {
     {
         // make permutation specific defines
         var permutationSource = GetShaderPermutationSourceString( i );
+        console.log( '// permutation string : \n' + permutationSource );
 
         // make the shader
         var shader          = MakeShader( vertexShaderSource, fragmentShaderSource, permutationSource );
