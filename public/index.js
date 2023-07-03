@@ -48,6 +48,9 @@ var g_skyboxImages          = {};
 var g_loadImages            = ["splitsum.png"];
 
 // skyboxes
+/**
+ * Skybox PBR Textures Folder Lookups
+ */
 var g_skyboxes = {
     Vasa: "Skyboxes\\Vasa\\Vasa",
     Marriot: "Skyboxes\\Marriot\\Marriot",
@@ -57,6 +60,9 @@ var g_skyboxes = {
 };
 
 // materials
+/**
+ * PBR Texture Lookups
+ */
 var g_materials = {
     "Rusted Iron": [
         "rustediron2_basecolor.png",
@@ -86,7 +92,7 @@ var g_materials = {
         "Iron-Scuffed_normal.png",
         "white.png",
     ],
-    Floorboards: [
+    "Floorboards": [
         "sculptedfloorboards2b_basecolor.png",
         "sculptedfloorboards2b_metalness.png",
         "sculptedfloorboards2b_roughness.png",
@@ -423,7 +429,7 @@ var skyboxFragmentShaderSource = `
 //=========================================================================================
 var vertexShaderSource = 
 `
-#pragma vscode_glsllint_stage: vert
+#pragma vscode_glsllint_stage: STAGE
 
 // vertex input
 in vec4     a_position;
@@ -868,8 +874,9 @@ function GetLightPos(lightIndex) {
 }
 
 //=========================================================================================
-function GetNumShaderPermutations() {
-    return GetShaderPermutationIndex(true, true, true, EOutputMode.COUNT);
+function GetNumShaderPermutations() 
+{
+    return GetShaderPermutationIndex( true, true, true, EOutputMode.COUNT );
 }
 
 //=========================================================================================
@@ -888,19 +895,20 @@ function GetShaderPermutationIndex(
 }
 
 //=========================================================================================
-function GetShaderPermutationSourceString(index) {
+function GetShaderPermutationSourceString( index )
+{
     return (
         "#define DEBUG_WIREFRAME " +
-        (index % 2) +
+        ( index % 2 ) +
         "\n" +
         "#define USE_MATERIAL_TEXTURES " +
-        (Math.floor(index / 2) % 2) +
+        ( Math.floor( index / 2 ) % 2 ) +
         "\n" +
         "#define USE_IBL " +
-        (Math.floor(index / 4) % 2) +
+        ( Math.floor( index / 4 ) % 2 ) +
         "\n" +
         "#define OUTPUT_MODE " +
-        Math.floor(index / 8) +
+        Math.floor( index / 8 ) +
         "\n" +
         "#define OUTPUT_MODE_SHADED    0\n" +
         "#define OUTPUT_MODE_ALBEDO    1\n" +
@@ -1015,10 +1023,11 @@ function MakeShader( vertexSource, fragmentSource, permutationSource )
  * 카메라행렬 갱신.
  * 모델뷰행렬입니다
  */
-function UpdateCameraMatrix() {
-    g_cameraMatrix = CameraMatrix(
-        g_cameraYawPitchRoll,
-        VectorMultiply( g_cameraPosition, -1 )
+function UpdateCameraMatrix() 
+{
+    g_cameraMatrix = CameraMatrix( 
+        g_cameraYawPitchRoll, 
+        VectorMultiply( g_cameraPosition, -1 ) 
     );
 }
 
@@ -1028,12 +1037,13 @@ function UpdateCameraMatrix() {
  * near : 0.1
  * far : 3000
  */
-function UpdateProjectionMatrix() {
+function UpdateProjectionMatrix() 
+{
     g_projectionMatrix = Perspective(
-        ( 45.0 * 3.14 ) / 180.0,
+        ( 45.0 * Math.PI ) / 180.0,
         gl.canvas.width / gl.canvas.height,
         0.1,
-        3000.0
+        3000.0 
     );
 }
 
@@ -1041,7 +1051,8 @@ function UpdateProjectionMatrix() {
  * 캔버스의 크기 조정 및 투영행렬 갱신.
  * @param {HTMLCanvasElement} canvas 
  */
-function Resize( canvas ) {
+function Resize( canvas ) 
+{
     // Lookup the size the browser is displaying the canvas.
     var displayWidth  = canvas.clientWidth;
     var displayHeight = canvas.clientHeight;
@@ -1058,9 +1069,10 @@ function Resize( canvas ) {
 }
 
 //=========================================================================================
-function Perspective(fieldOfViewInRadians, aspect, near, far) {
-    var f = Math.tan(Math.PI * 0.5 - 0.5 * fieldOfViewInRadians);
-    var rangeInv = 1.0 / (near - far);
+function Perspective( fieldOfViewInRadians, aspect, near, far ) 
+{
+    var f = Math.tan( Math.PI * 0.5 - 0.5 * fieldOfViewInRadians );
+    var rangeInv = 1.0 / ( near - far );
 
     return [
         f / aspect,
@@ -2077,19 +2089,22 @@ function DrawScene(thisFrameTimeStamp) {
 }
 
 //=========================================================================================
-function ToggleDebugPanel() {
+function ToggleDebugPanel() 
+{
     g_debugPanelOpen = !g_debugPanelOpen;
 
     if (g_debugPanelOpen) 
     {
         document.getElementById("DebugPanelControls").style.visibility  = "visible";
         document.getElementById("DebugPanelControls").style.display     = "";
+
         document.getElementById("DebugPanelCollapseIcon").innerText     = "[close] Debug Panel";
     } 
     else 
     {
         document.getElementById("DebugPanelControls").style.visibility  = "hidden";
         document.getElementById("DebugPanelControls").style.display     = "none";
+
         document.getElementById("DebugPanelCollapseIcon").innerText     = "[open] Debug Panel";
     }
 }
@@ -3118,7 +3133,7 @@ function Initialize() {
     }
     option          = document.createElement("option");
     option.text     = "Untextured";
-    document.getElementById("Debug_SceneMaterial").add(option);
+    document.getElementById("Debug_SceneMaterial").add( option );
 
     // fill in the IBL list
     for ( var key in g_skyboxes ) 
@@ -3146,7 +3161,8 @@ function Initialize() {
     }
 
     // setup pointer lock to activate later
-    if ( !havePointerLock ) {
+    if ( !havePointerLock ) 
+    {
         alert("your browser does not support pointer lock");
         return;
     }
@@ -3168,19 +3184,22 @@ function Initialize() {
         g_uniformsShaderSource +=
             "uniform " + g_uniforms[key][0] + " " + key + ";\n";
     }
+    //console.log( 'uniform constants : ' );
+    console.log( g_uniformsShaderSource );
 
     // make each shader permutation
     var permuteCount        = GetNumShaderPermutations();
     for ( var i = 0 ; i < GetNumShaderPermutations() ; ++i ) 
     {
         // make permutation specific defines
-        var permutationSource = GetShaderPermutationSourceString(i);
+        var permutationSource = GetShaderPermutationSourceString( i );
 
         // make the shader
         var shader          = MakeShader( vertexShaderSource, fragmentShaderSource, permutationSource );
 
         // make the sphere mesh buffers
         shader.sphereMeshVertCount = sphereMesh.pos.length;
+
         shader.sphereMesh   = gl.createVertexArray();
         gl.bindVertexArray( shader.sphereMesh );
 
@@ -3189,7 +3208,7 @@ function Initialize() {
         // make the cube mesh buffers
         shader.cubeMeshVertCount = cubeMesh.pos.length;
         shader.cubeMesh = gl.createVertexArray();
-        gl.bindVertexArray(shader.cubeMesh);
+        gl.bindVertexArray( shader.cubeMesh );
 
         MakeMeshBuffers( cubeMesh, shader.program );
 
