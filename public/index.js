@@ -41,6 +41,9 @@ var g_clearColor = [
 ];
 
 // a dictionary of file names to textures
+/**
+ * @type {Object.<string,WebGLTexture>}
+ */
 var g_images                = {};
 var g_skyboxImages          = {};
 
@@ -473,7 +476,8 @@ void main()
 }`;
 
 //=========================================================================================
-var fragmentShaderSource = ` 
+var fragmentShaderSource = 
+`
     #pragma vscode_glsllint_stage: STAGE
 
     // pixel input
@@ -491,384 +495,393 @@ var fragmentShaderSource = `
 
     const float PI = 3.14159265359;
 
-    float DistributionGGX(vec3 N, vec3 H, float roughness)
+    float DistributionGGX( vec3 N, vec3 H, float roughness )
     {
-        float a      = roughness*roughness;
-        float a2     = a*a;
-        float NdotH  = max(dot(N, H), 0.0);
-        float NdotH2 = NdotH*NdotH;
+        float a      = roughness * roughness ;
+        float a2     = a * a ;
+        float NdotH  = max( dot( N, H ), 0.0 ) ;
+        float NdotH2 = NdotH * NdotH ;
     
-        float nom   = a2;
-        float denom = (NdotH2 * (a2 - 1.0) + 1.0);
-        denom = PI * denom * denom;
+        float nom    = a2 ;
+        float denom  = ( NdotH2 * ( a2 - 1.0 ) + 1.0 );
+        denom        = PI * denom * denom ;
     
-        return nom / denom;
+        return nom / denom ;
     }
 
-    float GeometrySchlickGGX(float NdotV, float roughness)
+    float GeometrySchlickGGX( float NdotV, float roughness )
     {
-        float r = (roughness + 1.0);
-        float k = (r*r) / 8.0;
+        float r     = ( roughness + 1.0 ) ;
+        float k     = ( r * r ) / 8.0 ;
 
-        float nom   = NdotV;
-        float denom = NdotV * (1.0 - k) + k;
+        float nom   = NdotV ;
+        float denom = NdotV * ( 1.0 - k ) + k ;
     
-        return nom / denom;
+        return nom / denom ;
     }
 
-    float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
+    float GeometrySmith( vec3 N, vec3 V, vec3 L, float roughness )
     {
-        float NdotV = max(dot(N, V), 0.0);
-        float NdotL = max(dot(N, L), 0.0);
-        float ggx2  = GeometrySchlickGGX(NdotV, roughness);
-        float ggx1  = GeometrySchlickGGX(NdotL, roughness);
+        float NdotV = max( dot( N, V ), 0.0 ) ;
+        float NdotL = max( dot( N, L ), 0.0 ) ;
+        float ggx2  = GeometrySchlickGGX( NdotV, roughness ) ;
+        float ggx1  = GeometrySchlickGGX( NdotL, roughness ) ;
     
-        return ggx1 * ggx2;
+        return ggx1 * ggx2 ;
     }
 
-    vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
+    vec3 fresnelSchlickRoughness( float cosTheta, vec3 F0, float roughness )
     {
-        return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(1.0 - cosTheta, 5.0);
+        return F0 + ( max( vec3( 1.0 - roughness ), F0 ) - F0 ) * pow( 1.0 - cosTheta, 5.0 ) ;
     }  
 
-    vec3 fresnelSchlick(float cosTheta, vec3 F0)
+    vec3 fresnelSchlick( float cosTheta, vec3 F0 )
     {
-        return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
+        return F0 + ( 1.0 - F0 ) * pow( 1.0 - cosTheta, 5.0 );
     }  
 
-    vec3 PositionalLight (vec3 worldPos, vec3 N, vec3 V, vec3 lightPos, vec3 lightColor, vec3 albedo, float metallic, float roughness, float scalarF0)
+    vec3 PositionalLight( vec3 worldPos, vec3 N, vec3 V, 
+                          vec3 lightPos, vec3 lightColor, 
+                          vec3 albedo, float metallic, float roughness, float scalarF0 )
     {
-        float distance    = length(lightPos - worldPos);
-        float attenuation = 1.0 / (distance * distance);
-        vec3 L = normalize(lightPos - worldPos);  
+        float distance      = length( lightPos - worldPos ) ;
+        float attenuation   = 1.0 / ( distance * distance ) ;
 
-        vec3 H = normalize(V + L);  
+        vec3 L              = normalize( lightPos - worldPos );  
+        vec3 H              = normalize( V + L );  
 
-        vec3 radiance     = lightColor * attenuation;     
+        vec3 radiance       = lightColor * attenuation ;
 
-        vec3 F0 = vec3(scalarF0); 
-        F0      = mix(F0, albedo, metallic);
-        vec3 F  = fresnelSchlick(max(dot(H, V), 0.0), F0);    
+        vec3 F0             = vec3( scalarF0 ) ; 
+        F0                  = mix( F0, albedo, metallic ) ;
 
-        float NDF = DistributionGGX(N, H, roughness);       
-        float G   = GeometrySmith(N, V, L, roughness);     
+        vec3 F              = fresnelSchlick( max( dot( H, V ), 0.0 ), F0 ) ;
+        float NDF           = DistributionGGX( N, H, roughness ) ;
+        float G             = GeometrySmith( N, V, L, roughness ) ;
 
-        vec3 nominator    = NDF * G * F;
-        float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.001; 
-        vec3 specular     = nominator / denominator;       
+        vec3 nominator      = NDF * G * F ;
+        float denominator   = 4.0 * max( dot( N, V ), 0.0 ) * max( dot( N, L ), 0.0 ) + 0.001 ;
+        vec3 specular       = nominator / denominator ;
 
-        vec3 kS = F;
-        vec3 kD = vec3(1.0) - kS;
-            
-        kD *= 1.0 - metallic;     
+        vec3 kS = F ;
+        vec3 kD = vec3( 1.0 ) - kS ;
 
-        float NdotL = max(dot(N, L), 0.0);        
-        return (kD * albedo / PI + specular) * radiance * NdotL;  
+        kD *= 1.0 - metallic ;
+
+        float NdotL = max( dot( N, L ), 0.0 ) ;
+        return ( kD * albedo / PI + specular ) * radiance * NdotL ;
     }
 
-    vec3 DirectionalLight (vec3 worldPos, vec3 N, vec3 V, vec3 lightDir, vec3 lightColor, vec3 albedo, float metallic, float roughness, float scalarF0)
+    vec3 DirectionalLight( vec3 worldPos, vec3 N, vec3 V,
+                           vec3 lightDir, vec3 lightColor,
+                           vec3 albedo, float metallic, float roughness, float scalarF0 )
     {
-        vec3 L = normalize(lightDir);  
+        vec3 L              = normalize( lightDir ) ;
+        vec3 H              = normalize( V + L ) ;
 
-        vec3 H = normalize(V + L);  
+        vec3 radiance       = lightColor ;
 
-        vec3 radiance     = lightColor;     
+        vec3 F0             = vec3( scalarF0 ) ;
+        F0                  = mix( F0, albedo, metallic );
 
-        vec3 F0 = vec3(scalarF0); 
-        F0      = mix(F0, albedo, metallic);
-        vec3 F  = fresnelSchlick(max(dot(H, V), 0.0), F0);    
+        vec3 F              = fresnelSchlick( max( dot( H, V ), 0.0 ), F0 ) ;
+        float NDF           = DistributionGGX( N, H, roughness ) ;
+        float G             = GeometrySmith( N, V, L, roughness ) ;
 
-        float NDF = DistributionGGX(N, H, roughness);       
-        float G   = GeometrySmith(N, V, L, roughness);     
+        vec3 nominator      = NDF * G * F ;
+        float denominator   = 4.0 * max( dot( N, V ), 0.0 ) * max( dot( N, L ), 0.0 ) + 0.001 ;
+        vec3 specular       = nominator / denominator ;
 
-        vec3 nominator    = NDF * G * F;
-        float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.001; 
-        vec3 specular     = nominator / denominator;       
+        vec3 kS = F ;
+        vec3 kD = vec3( 1.0 ) - kS ;
 
-        vec3 kS = F;
-        vec3 kD = vec3(1.0) - kS;
-            
-        kD *= 1.0 - metallic;     
+        kD *= 1.0 - metallic ;
 
-        float NdotL = max(dot(N, L), 0.0);        
-        return (kD * albedo / PI + specular) * radiance * NdotL;  
+        float NdotL = max( dot( N, L ), 0.0 ) ;
+        return ( kD * albedo / PI + specular ) * radiance * NdotL ;
     }
 
-    float D_GGX(float NoH, float linearRoughness) 
+    float D_GGX( float NoH, float linearRoughness )
     {
         float a = NoH * linearRoughness;
-        float k = linearRoughness / (1.0 - NoH * NoH + a * a);
-        return k * k * (1.0 / PI);
+        float k = linearRoughness / ( 1.0 - NoH * NoH + a * a );
+        return k * k * ( 1.0 / PI );
     }
 
-    float V_SmithGGXCorrelated(float NoV, float NoL, float linearRoughness) 
+    float V_SmithGGXCorrelated( float NoV, float NoL, float linearRoughness )
     {
-        float a2 = linearRoughness * linearRoughness;
-        float GGXV = NoL * sqrt(NoV * NoV * (1.0 - a2) + a2);
-        float GGXL = NoV * sqrt(NoL * NoL * (1.0 - a2) + a2);
-        return 0.5 / (GGXV + GGXL);
+        float a2    = linearRoughness * linearRoughness ;
+        float GGXV  = NoL * sqrt( NoV * NoV * ( 1.0 - a2 ) + a2 ) ;
+        float GGXL  = NoV * sqrt( NoL * NoL * ( 1.0 - a2 ) + a2 ) ;
+        return 0.5 / ( GGXV + GGXL ) ;
     }
 
-    vec3 F_Schlick(float VoH, vec3 f0) 
+    vec3 F_Schlick( float VoH, vec3 f0 )
     {
-        float f = pow(1.0 - VoH, 5.0);
-        return f + f0 * (1.0 - f);
+        float f = pow( 1.0 - VoH, 5.0 ) ;
+        return f + f0 * ( 1.0 - f ) ;
     }
 
-    vec3 DirectionalLight2 (vec3 worldPos, vec3 N, vec3 V, vec3 lightDir, vec3 lightColor, vec3 albedo, float metallic, float roughness, float scalarF0)
+    vec3 DirectionalLight2( vec3 worldPos, vec3 N, vec3 V,
+                            vec3 lightDir, vec3 lightColor,
+                            vec3 albedo, float metallic, float roughness, float scalarF0 )
     {
-        vec3 L = normalize(lightDir);  
+        vec3 L      = normalize( lightDir ) ;
+        vec3 H      = normalize( V + L ) ;
 
-        vec3 H = normalize(V + L);  
+        vec3 F0     = vec3( scalarF0 ) ; 
+        F0          = mix( F0, albedo, metallic );
 
-        vec3 F0 = vec3(scalarF0); 
-        F0      = mix(F0, albedo, metallic);
+        float NoH   = clamp( dot( N, H ), 0.0, 1.0 ) ;
+        float NoV   = clamp( dot( N, V ), 0.0, 1.0 ) ;
+        float HoV   = clamp( dot( H, V ), 0.0, 1.0 ) ;
+        float NoL   = clamp( dot( N, L ), 0.0, 1.0 ) ;
 
-        float NoH = clamp(dot(N,H), 0.0, 1.0);
-        float NoV = clamp(dot(N,V), 0.0, 1.0);
-        float HoV = clamp(dot(H,V), 0.0, 1.0);
-        float NoL = clamp(dot(N,L), 0.0, 1.0);
+        float D     = D_GGX( NoH, roughness * roughness );
+        vec3 F      = F_Schlick( HoV, F0 );
+        float Vis   = V_SmithGGXCorrelated( NoV, NoL, roughness * roughness );
 
-        float D = D_GGX(NoH, roughness * roughness);
-        vec3 F = F_Schlick(HoV, F0);
-        float Vis = V_SmithGGXCorrelated(NoV, NoL, roughness*roughness);
+        vec3 specular = F * ( D * Vis );
 
-        vec3 specular = F * (D * Vis);
-
-        vec3 kS = F;
-        vec3 kD = vec3(1.0) - kS;
+        vec3 kS = F ;
+        vec3 kD = vec3( 1.0 ) - kS ;
             
-        kD *= 1.0 - metallic;
-        
-        return (kD * albedo / PI + specular) * lightColor * NoL;  
+        kD *= 1.0 - metallic ;
+
+        return ( kD * albedo / PI + specular ) * lightColor * NoL ;
     }
 
-    vec3 IBL (vec3 N, vec3 V, vec3 R, vec3 albedo, float metallic, float roughness, float scalarF0)
+    vec3 IBL( vec3 N, vec3 V, vec3 R, vec3 albedo, float metallic, float roughness, float scalarF0 )
     {
-        vec3 F0 = vec3(scalarF0); 
-        F0      = mix(F0, albedo, metallic);
-        vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, roughness); 
-        vec3 kS = F;
-        vec3 kD = 1.0 - kS;
+        vec3 F0     = vec3( scalarF0 ) ;
+        F0          = mix( F0, albedo, metallic ) ;
+
+        vec3 F      = fresnelSchlickRoughness( max( dot( N, V ), 0.0 ), F0, roughness ) ;
+
+        vec3 kS = F ;
+        vec3 kD = vec3( 1.0 ) - kS ;
+
         kD *= 1.0 - metallic;
 
         // diffuse IBL
-        vec3 irradiance = pow(texture(u_diffuseIBL, N).rgb, vec3(2.2));
-        vec3 diffuse    = irradiance * albedo;
+        vec3 irradiance = pow( texture( u_diffuseIBL, N ).rgb, vec3( 2.2 ) );
+        vec3 diffuse    = irradiance * albedo ;
 
         // specular IBL
-        const float MAX_REFLECTION_LOD = 4.0;
+        const float MAX_REFLECTION_LOD = 4.0 ;
 
         // TODO: temp!
         //roughness = 1.0f;
 
-        vec3 prefilteredColor = pow(textureLod(u_specularIBL, R, roughness * MAX_REFLECTION_LOD).rgb, vec3(2.2));    
-        vec2 brdf  = texture(u_splitSum, vec2(max(dot(N, V), 0.0), roughness)).rg;
-        vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
+        vec3 prefilteredColor   = pow( textureLod( u_specularIBL, R, roughness * MAX_REFLECTION_LOD ).rgb, vec3( 2.2 ) ) ;
+        vec2 brdf               = texture( u_splitSum, vec2( max( dot( N, V ), 0.0 ), roughness ) ).rg ;
+        vec3 specular           = prefilteredColor * ( F * brdf.x + brdf.y );
 
-        vec3 ambient    = (kD * diffuse + specular);
+        vec3 ambient = ( kD * diffuse + specular );
         return ambient;
     }
-        
+
     void main()
     {
         #if DEBUG_WIREFRAME
-            float margin = length(fwidth(v_barycentric)) * 0.25;
+            float margin        = length( fwidth( v_barycentric ) ) * 0.25 ;
 
-            float barycentricMin = min(v_barycentric.x, min(v_barycentric.y, v_barycentric.z));
-            if (barycentricMin > margin) //0.025)
-            discard;
+            float barycentricMin = min( v_barycentric.x, min( v_barycentric.y, v_barycentric.z ) );
+            if ( barycentricMin > margin ) // 0.025 )
+                discard;
         #endif
 
-        vec3 V                  = normalize( u_cameraPosition - v_worldPos );  
+        vec3 V                  = normalize( u_cameraPosition - v_worldPos ) ;
 
-        vec3 col                = u_objectEmissive;
+        vec3 col                = u_objectEmissive ;        // 발광색
 
-        vec3 objectAlbedo       = u_objectAlbedo;
-        float objectMetallic    = u_objectMetallic;
-        float objectRoughness   = u_objectRoughness;
-        float objectAO          = u_objectAO;
+        vec3 objectAlbedo       = u_objectAlbedo ;          // Albedo 자체색
+        float objectMetallic    = u_objectMetallic ;        // Metallic 메탈지수
+        float objectRoughness   = u_objectRoughness ;       // Roughness 러프지수
+        float objectAO          = u_objectAO ;              // Ambient Occlusion 차폐음영
 
         #if USE_MATERIAL_TEXTURES
-            vec3 texAlbedo      = pow(texture(u_textureAlbedo, v_uv).rgb, vec3(2.2));
-            float texMetallic   = texture(u_textureMetallic, v_uv).r;
-            float texRoughness  = texture(u_textureRoughness, v_uv).r;
-            float texAO         = texture(u_textureAO, v_uv).r;
-            vec3 texN           = texture(u_textureNormal, v_uv).rgb * 2.0 - 1.0;
+            vec3 texAlbedo      = pow( texture( u_textureAlbedo, v_uv ).rgb, vec3( 2.2 ) ) ;
+            float texMetallic   = texture( u_textureMetallic, v_uv ).r ;
+            float texRoughness  = texture( u_textureRoughness, v_uv ).r ;
+            float texAO         = texture( u_textureAO, v_uv ).r ;
+            vec3 texN           = texture( u_textureNormal, v_uv ).rgb * 2.0 - 1.0 ;
         #else
-            vec3 texAlbedo      = vec3(1.0);
-            float texMetallic   = 0.5;
-            float texRoughness  = 0.5;
-            float texAO         = 1.0;
-            vec3 texN           = vec3(0.0, 0.0, 1.0);
+            vec3 texAlbedo      = vec3( 1.0 ) ;
+            float texMetallic   = 0.5 ;
+            float texRoughness  = 0.5 ;
+            float texAO         = 1.0 ;
+            vec3 texN           = vec3( 0.0, 0.0, 1.0 ) ;
         #endif
 
-        objectAlbedo            *= texAlbedo;
-        objectAO                *= texAO;
+        objectAlbedo            *= texAlbedo ;
+        objectAO                *= texAO ;
 
         // handle features being turned off
-        objectAO                = mix(1.0, objectAO, u_AO);
-        texN                    = mix(vec3(0.0, 0.0, 1.0), texN, u_normalMapping);
+        objectAO                = mix( 1.0, objectAO, u_AO ) ;
+        texN                    = mix( vec3( 0.0, 0.0, 1.0 ), texN, u_normalMapping );
         vec3 N                  = normalize( v_tbn * texN );
         vec3 R                  = reflect( -V, N ); 
 
         // TODO: do these branchlessly
-        if (objectMetallic <= 1.0)
-            objectMetallic = mix(0.0, texMetallic, objectMetallic);
+        if ( objectMetallic <= 1.0 )
+            objectMetallic = mix( 0.0, texMetallic, objectMetallic );
         else
-            objectMetallic = mix(texMetallic, 1.0, objectMetallic - 1.0);
+            objectMetallic = mix( texMetallic, 1.0, objectMetallic - 1.0 );
 
-        if (objectRoughness <= 1.0)
-            objectRoughness = mix(0.0, texRoughness, objectRoughness);
+        if ( objectRoughness <= 1.0 )
+            objectRoughness = mix( 0.0, texRoughness, objectRoughness );
         else
-            objectRoughness = mix(texRoughness, 1.0, objectRoughness - 1.0);
+            objectRoughness = mix( texRoughness, 1.0, objectRoughness - 1.0 );
 
-        objectRoughness = clamp(objectRoughness, 0.01, 0.9);
+        objectRoughness = clamp( objectRoughness, 0.01, 0.9 );
 
         // positional lights
-        col += PositionalLight( v_worldPos, N, V, u_light0Pos, u_light0Color, objectAlbedo, objectMetallic, objectRoughness, u_objectF0 ) * objectAO;
-        col += PositionalLight( v_worldPos, N, V, u_light1Pos, u_light1Color, objectAlbedo, objectMetallic, objectRoughness, u_objectF0 ) * objectAO;
-        col += PositionalLight( v_worldPos, N, V, u_light2Pos, u_light2Color, objectAlbedo, objectMetallic, objectRoughness, u_objectF0 ) * objectAO;
-        col += PositionalLight( v_worldPos, N, V, u_light3Pos, u_light3Color, objectAlbedo, objectMetallic, objectRoughness, u_objectF0 ) * objectAO;
+        col += PositionalLight( v_worldPos, N, V, u_light0Pos, u_light0Color, objectAlbedo, objectMetallic, objectRoughness, u_objectF0 ) * objectAO ;
+        col += PositionalLight( v_worldPos, N, V, u_light1Pos, u_light1Color, objectAlbedo, objectMetallic, objectRoughness, u_objectF0 ) * objectAO ;
+        col += PositionalLight( v_worldPos, N, V, u_light2Pos, u_light2Color, objectAlbedo, objectMetallic, objectRoughness, u_objectF0 ) * objectAO ;
+        col += PositionalLight( v_worldPos, N, V, u_light3Pos, u_light3Color, objectAlbedo, objectMetallic, objectRoughness, u_objectF0 ) * objectAO ;
 
         // directional light
-        if (u_lightDirType == 1.0f)
-            col += DirectionalLight2(v_worldPos, N, V, u_lightDir, u_lightDirColor, objectAlbedo, objectMetallic, objectRoughness, u_objectF0) * objectAO;
+        if ( u_lightDirType == 1.0f )
+            col += DirectionalLight2( v_worldPos, N, V, u_lightDir, u_lightDirColor, objectAlbedo, objectMetallic, objectRoughness, u_objectF0 ) * objectAO ;
         else
-            col += DirectionalLight(v_worldPos, N, V, u_lightDir, u_lightDirColor, objectAlbedo, objectMetallic, objectRoughness, u_objectF0) * objectAO;
+            col += DirectionalLight( v_worldPos, N, V, u_lightDir, u_lightDirColor, objectAlbedo, objectMetallic, objectRoughness, u_objectF0 ) * objectAO ;
 
         // IBL diffuse and specular
         #if USE_IBL
-            col += IBL(N, V, R, objectAlbedo, objectMetallic, objectRoughness, u_objectF0)  * objectAO;
+            col += IBL( N, V, R, objectAlbedo, objectMetallic, objectRoughness, u_objectF0 )  * objectAO ;
         // else, ambient light 
         #else
-            col += u_ambientLight * objectAlbedo * objectAO;
+            col += u_ambientLight * objectAlbedo * objectAO ;
         #endif
 
         // HDR -> LDR
-        col = col / (col + vec3(1.0));
+        col = col / ( col + vec3( 1.0 ) ) ;
 
         // Debug mode outputs
         #if OUTPUT_MODE == OUTPUT_MODE_SHADED
-            outColor.rgb = pow( col, vec3(1.0/2.2));
+            outColor.rgb = pow( col, vec3( 1.0 / 2.2 ) ) ;
         #endif
 
         #if OUTPUT_MODE == OUTPUT_MODE_ALBEDO
-            outColor.rgb = objectAlbedo;
+            outColor.rgb = objectAlbedo ;
         #endif
 
         #if OUTPUT_MODE == OUTPUT_MODE_NORMAL
-            outColor.rgb = N * 0.5 + 0.5;
+            outColor.rgb = N * 0.5 + 0.5 ;
         #endif  
 
         #if OUTPUT_MODE == OUTPUT_MODE_METALLIC
-            outColor.rgb = vec3( objectMetallic );
+            outColor.rgb = vec3( objectMetallic ) ;
         #endif    
 
         #if OUTPUT_MODE == OUTPUT_MODE_ROUGHNESS
-            outColor.rgb = vec3( objectRoughness );
+            outColor.rgb = vec3( objectRoughness ) ;
         #endif     
 
         #if OUTPUT_MODE == OUTPUT_MODE_EMISSIVE
-            outColor.rgb = u_objectEmissive;
+            outColor.rgb = u_objectEmissive ;
         #endif 
 
         #if OUTPUT_MODE == OUTPUT_MODE_AO
-            outColor.rgb = vec3( objectAO );
-        #endif     
+            outColor.rgb = vec3( objectAO ) ;
+        #endif
 
-        outColor.a = 1.0;
+        outColor.a = 1.0 ;
     }
-    `;
+`;
 
 //=========================================================================================
-function GetDirectionalLightColor() {
-    if ( document.getElementById("Debug_DirectionalLight").checked ) {
+function GetDirectionalLightColor()
+{
+    if ( document.getElementById("Debug_DirectionalLight").checked )
+    {
         return g_lightDirColor;
-    } else {
+    }
+    else
+    {
         return [0, 0, 0];
     }
 }
 
 //=========================================================================================
-function GetLightColor(lightIndex) {
-    if (document.getElementById("Debug_UseColoredLights").checked) {
-        switch (lightIndex) {
+function GetLightColor( lightIndex )
+{
+    if ( document.getElementById("Debug_UseColoredLights").checked ) 
+    {
+        switch ( lightIndex )
+        {
             case 0:
-                return g_light0ColorB;
+                return g_light0ColorB ;
             case 1:
-                return g_light1ColorB;
+                return g_light1ColorB ;
             case 2:
-                return g_light2ColorB;
+                return g_light2ColorB ;
             case 3:
-                return g_light3ColorB;
+                return g_light3ColorB ;
         }
-    } else {
-        switch (lightIndex) {
+    } 
+    else 
+    {
+        switch ( lightIndex ) 
+        {
             case 0:
-                return g_light0ColorA;
+                return g_light0ColorA ;
             case 1:
-                return g_light1ColorA;
+                return g_light1ColorA ;
             case 2:
-                return g_light2ColorA;
+                return g_light2ColorA ;
             case 3:
-                return g_light3ColorA;
+                return g_light3ColorA ;
         }
     }
 }
 
 //=========================================================================================
-function GetLightPos(lightIndex) {
-    if (!document.getElementById("Debug_PointLight" + lightIndex).checked) {
+function GetLightPos( lightIndex )
+{
+    if ( !document.getElementById( "Debug_PointLight" + lightIndex ).checked )
+    {
         return [-10000, -10000, -10000];
     }
 
-    if (document.getElementById("Debug_AnimateLights").checked) {
-        var seconds = new Date().getTime() / 1000;
-        var offset = [];
-        offset[0] = Math.sin(seconds * (lightIndex + 1)) * 2;
-        offset[1] = Math.cos(seconds * (lightIndex + 1)) * 2;
-        offset[2] =
-            Math.sin(seconds * (lightIndex + 1)) *
-            Math.cos(seconds * (lightIndex + 1)) *
+    if ( document.getElementById( "Debug_AnimateLights" ).checked ) 
+    {
+        var seconds = new Date().getTime() / 1000 ;
+
+        var offset  = [];
+        offset[0]   = Math.sin( seconds * ( lightIndex + 1 ) ) * 2 ;
+        offset[1]   = Math.cos( seconds * ( lightIndex + 1 ) ) * 2 ;
+        offset[2]   =
+            Math.sin( seconds * ( lightIndex + 1 ) ) *
+            Math.cos( seconds * ( lightIndex + 1 ) ) *
             3;
 
-        switch (lightIndex) {
+        switch ( lightIndex )
+        {
             case 0:
-                return [
-                    g_light0Pos[0] + offset[0],
-                    g_light0Pos[1] + offset[1],
-                    g_light0Pos[2] + offset[2],
-                ];
+                return [ g_light0Pos[0] + offset[0], g_light0Pos[1] + offset[1], g_light0Pos[2] + offset[2], ] ;
             case 1:
-                return [
-                    g_light1Pos[0] + offset[0],
-                    g_light1Pos[1] + offset[1],
-                    g_light1Pos[2] + offset[2],
-                ];
+                return [ g_light1Pos[0] + offset[0], g_light1Pos[1] + offset[1], g_light1Pos[2] + offset[2], ] ;
             case 2:
-                return [
-                    g_light2Pos[0] + offset[0],
-                    g_light2Pos[1] + offset[1],
-                    g_light2Pos[2] + offset[2],
-                ];
+                return [ g_light2Pos[0] + offset[0], g_light2Pos[1] + offset[1], g_light2Pos[2] + offset[2], ] ;
             case 3:
-                return [
-                    g_light3Pos[0] + offset[0],
-                    g_light3Pos[1] + offset[1],
-                    g_light3Pos[2] + offset[2],
-                ];
+                return [ g_light3Pos[0] + offset[0], g_light3Pos[1] + offset[1], g_light3Pos[2] + offset[2], ] ;
         }
-    } else {
-        switch (lightIndex) {
+    } 
+    else 
+    {
+        switch ( lightIndex ) 
+        {
             case 0:
-                return g_light0Pos;
+                return g_light0Pos ;
             case 1:
-                return g_light1Pos;
+                return g_light1Pos ;
             case 2:
-                return g_light2Pos;
+                return g_light2Pos ;
             case 3:
-                return g_light3Pos;
+                return g_light3Pos ;
         }
     }
 }
@@ -898,18 +911,10 @@ function GetShaderPermutationIndex(
 function GetShaderPermutationSourceString( index )
 {
     return (
-        "#define DEBUG_WIREFRAME " +
-        ( index % 2 ) +
-        "\n" +
-        "#define USE_MATERIAL_TEXTURES " +
-        ( Math.floor( index / 2 ) % 2 ) +
-        "\n" +
-        "#define USE_IBL " +
-        ( Math.floor( index / 4 ) % 2 ) +
-        "\n" +
-        "#define OUTPUT_MODE " +
-        Math.floor( index / 8 ) +
-        "\n" +
+        "#define DEBUG_WIREFRAME " + ( index % 2 ) + "\n" +
+        "#define USE_MATERIAL_TEXTURES " + ( Math.floor( index / 2 ) % 2 ) + "\n" +
+        "#define USE_IBL " + ( Math.floor( index / 4 ) % 2 ) + "\n" +
+        "#define OUTPUT_MODE " + Math.floor( index / 8 ) + "\n" +
         "#define OUTPUT_MODE_SHADED    0\n" +
         "#define OUTPUT_MODE_ALBEDO    1\n" +
         "#define OUTPUT_MODE_NORMAL    2\n" +
@@ -924,7 +929,7 @@ function GetShaderPermutationSourceString( index )
 /**
  * 셰이더 객체 생성
  * @param {WebGL2RenderingContext} gl 
- * @param {Number} type 
+ * @param {Number} type gl.VERTEX_SHADER | gl.FRAGMENT_SHADER
  * @param {String} source 
  * @param {String} permutationSource 
  * @returns {WebGLShader} 셰이더 객체
@@ -938,15 +943,16 @@ function CreateShader( gl, type, source, permutationSource )
         g_uniformsShaderSource +
         source;
 
-    var shader = gl.createShader(type);
-    gl.shaderSource(shader, fullSource);
-    gl.compileShader(shader);
-    var success = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
-    if ( success ) {
+    var shader = gl.createShader( type );
+    gl.shaderSource( shader, fullSource );
+    gl.compileShader( shader );
+    var success = gl.getShaderParameter( shader, gl.COMPILE_STATUS );
+    if ( success ) 
+    {
         return shader;
     }
 
-    var shaderErrorInfo = gl.getShaderInfoLog(shader);
+    var shaderErrorInfo = gl.getShaderInfoLog( shader );
     alert( shaderErrorInfo + "\n" + fullSource );
 
     console.log( shaderErrorInfo );
@@ -1021,7 +1027,7 @@ function MakeShader( vertexSource, fragmentSource, permutationSource )
 
 /**
  * 카메라행렬 갱신.
- * 모델뷰행렬입니다
+ * 뷰행렬입니다. 카메라 월드 행렬의 역행렬
  */
 function UpdateCameraMatrix() 
 {
@@ -1101,7 +1107,8 @@ function Perspective( fieldOfViewInRadians, aspect, near, far )
  * @param {*} B 
  * @returns 
  */
-function MultiplyMatrix4x4( A, B ) {
+function MultiplyMatrix4x4( A, B ) 
+{
     var ret = [];
 
     for ( var i = 0 ; i < 4 ; ++i ) 
@@ -1125,7 +1132,8 @@ function MultiplyMatrix4x4( A, B ) {
  * @param {*} translation 
  * @returns 
  */
-function CameraMatrix( yawPitchRoll, translation ) {
+function CameraMatrix( yawPitchRoll, translation )
+{
     var cosAlpha    = Math.cos( yawPitchRoll[2] );
     var sinAlpha    = Math.sin( yawPitchRoll[2] );
 
@@ -1583,18 +1591,22 @@ function DrawTetrahedron(
     gl.drawArrays(primitiveType, offset, count);
 }
 
-//=========================================================================================
-function DrawCube(
-    translation,
-    yawPitchRoll,
-    scale,
-    albedo,
-    emissive,
-    metallic,
-    roughness,
-    F0,
-    materialTextures
-) {
+
+/**
+ * 원하는 위치에 원하는 재질로 박스를 렌더링한다.
+ * @param {*} translation 
+ * @param {*} yawPitchRoll 
+ * @param {*} scale 
+ * @param {*} albedo 
+ * @param {*} emissive 
+ * @param {*} metallic 
+ * @param {*} roughness 
+ * @param {*} F0 
+ * @param {*} materialTextures 
+ */
+function DrawCube( translation, yawPitchRoll, scale,
+                   albedo, emissive, metallic, roughness, F0, materialTextures ) 
+{
     var shader = PrepareToDrawMesh(
         translation,
         yawPitchRoll,
@@ -1608,12 +1620,13 @@ function DrawCube(
     );
 
     // Bind the attribute/buffer set we want.
-    gl.bindVertexArray(shader.cubeMesh);
+    gl.bindVertexArray( shader.cubeMesh );
 
-    var primitiveType = gl.TRIANGLES;
-    var offset = 0;
-    var count = shader.cubeMeshVertCount / 3;
-    gl.drawArrays(primitiveType, offset, count);
+    var primitiveType   = gl.TRIANGLES ;
+    var offset          = 0 ;
+    var count           = shader.cubeMeshVertCount / 3 ;
+
+    gl.drawArrays( primitiveType, offset, count );
 }
 
 /**
@@ -1628,7 +1641,8 @@ function DrawCube(
  * @param {*} F0 
  * @param {*} materialTextures 
  */
-function DrawSphere( translation, yawPitchRoll, scale, albedo, emissive, metallic, roughness, F0, materialTextures ) 
+function DrawSphere( translation, yawPitchRoll, scale, 
+                     albedo, emissive, metallic, roughness, F0, materialTextures )
 {
     var shader = PrepareToDrawMesh(
         translation,
@@ -1652,17 +1666,19 @@ function DrawSphere( translation, yawPitchRoll, scale, albedo, emissive, metalli
     gl.drawArrays( primitiveType, offset, count );
 }
 
-//=========================================================================================
-function DrawSkyboxCube() {
+
+function DrawSkyboxCube() 
+{
     // if no skybox selected, bail out
     var e = document.getElementById("Debug_SceneIBL");
     var skybox = e.options[e.selectedIndex].value;
     if (g_skyboxImages[skybox] == null) return;
 
     // Tell it to use our program (pair of shaders)
-    if (g_lastShaderUsed != g_skyboxShader.program) {
-        gl.useProgram(g_skyboxShader.program);
-        g_lastShaderUsed = g_skyboxShader.program;
+    if ( g_lastShaderUsed != g_skyboxShader.program )
+    {
+        gl.useProgram( g_skyboxShader.program ) ;
+        g_lastShaderUsed = g_skyboxShader.program ;
     }
 
     // figure out which skybox image to show
@@ -1674,26 +1690,31 @@ function DrawSkyboxCube() {
     objectValues.u_diffuseIBL = g_skyboxImages[skybox][skyboxImageIndex];
 
     // fill out the uniforms
-    for (var key in g_skyboxShader.uniforms)
-        FillUniformValue(key, g_skyboxShader.uniforms[key], objectValues);
+    for ( var key in g_skyboxShader.uniforms )
+    {
+        FillUniformValue( key, g_skyboxShader.uniforms[key], objectValues );
+    }
 
     // Bind the attribute/buffer set we want.
-    gl.bindVertexArray(g_skyboxShader.cubeMesh);
+    gl.bindVertexArray( g_skyboxShader.cubeMesh );
 
-    // draw
-    gl.depthFunc(gl.LEQUAL);
-    gl.disable(gl.CULL_FACE);
-    gl.depthMask(0);
-    var primitiveType = gl.TRIANGLES;
-    var offset = 0;
-    var count = g_skyboxShader.cubeMeshVertCount / 3;
-    gl.drawArrays(primitiveType, offset, count);
-    gl.depthMask(1);
-    gl.enable(gl.CULL_FACE);
+    gl.depthFunc( gl.LEQUAL ) ;
+    gl.disable( gl.CULL_FACE ) ;
+    gl.depthMask( 0 ) ;
+
+    var primitiveType   = gl.TRIANGLES;
+    var offset          = 0;
+    var count           = g_skyboxShader.cubeMeshVertCount / 3 ;
+
+    gl.drawArrays( primitiveType, offset, count );
+
+    gl.depthMask( 1 ) ;
+    gl.enable( gl.CULL_FACE ) ;
 }
 
 //=========================================================================================
-function HandleInput(deltaTime) {
+function HandleInput( deltaTime )
+{
     if (!g_pointerLocked) return;
 
     // W or up arrowd
@@ -1771,36 +1792,35 @@ function HandleInput(deltaTime) {
 }
 
 //=========================================================================================
-function DrawScene(thisFrameTimeStamp) {
+function DrawScene( thisFrameTimeStamp ) 
+{
     // calculate a delta time for our frame
     var deltaTime = 0.0;
-    if (typeof thisFrameTimeStamp != "undefined") {
+    if ( typeof thisFrameTimeStamp != "undefined" ) 
+    {
         thisFrameTimeStamp *= 0.001;
         deltaTime = thisFrameTimeStamp - g_lastFrameTimeStamp;
         g_lastFrameTimeStamp = thisFrameTimeStamp;
     }
 
     // handle FPS calculation
-    g_frameCount++;
-    g_frameCountTime += deltaTime;
-    if (g_frameCountTime > 0.5) {
-        var fps = g_frameCount / g_frameCountTime;
-        document.getElementById("FPSDisplay").innerText =
-            "(" +
-            gl.canvas.width +
-            "x" +
-            gl.canvas.height +
-            ") FPS: " +
+    g_frameCount++ ;
+    g_frameCountTime += deltaTime ;
+    if ( g_frameCountTime > 0.5 ) 
+    {
+        var fps = g_frameCount / g_frameCountTime ;
+
+        document.getElementById( "FPSDisplay" ).innerText =
+            "(" + gl.canvas.width + "x" + gl.canvas.height + ") FPS: " +
             fps.toFixed(2) +
-            " (" +
-            (1000 / fps).toFixed(2) +
-            " ms)";
-        g_frameCount = 0;
-        g_frameCountTime = 0;
+            " (" + (1000 / fps).toFixed(2) + " ms)" ;
+
+        g_frameCount        = 0 ;
+        g_frameCountTime    = 0 ;
     }
 
     // user input
-    HandleInput(deltaTime);
+    HandleInput( deltaTime );
 
     // Draw
     Resize( gl.canvas );
@@ -1839,18 +1859,22 @@ function DrawScene(thisFrameTimeStamp) {
     // set the material textures
     var e = document.getElementById("Debug_SceneMaterial");
     var material = e.options[e.selectedIndex].value;
-    if (g_materials[material]) {
+    if ( g_materials[material] ) 
+    {
         objectMaterialTextures = [];
-        for (var index = 0; index < g_materials[material].length; ++index)
+        for ( var index = 0 ; index < g_materials[material].length ; ++index )
             objectMaterialTextures[index] =
                 g_images[g_materials[material][index]];
     }
 
     // draw a grid of things if we are supposed to
     var objectType = document.getElementById("Debug_SceneObject").selectedIndex;
-    if (document.getElementById("Debug_SceneSingle").selectedIndex == 0) {
-        for (var iy = 0; iy < 9; ++iy) {
-            for (var ix = 0; ix < 9; ++ix) {
+    if ( document.getElementById("Debug_SceneSingle").selectedIndex == 0 ) 
+    {
+        for (var iy = 0 ; iy < 9 ; ++iy ) 
+        {
+            for (var ix = 0; ix < 9; ++ix) 
+            {
                 var rotMultiply = Math.sin((ix + 0.3) * (iy + 0.7)) % 1;
 
                 if (objectType == 0) {
@@ -1892,9 +1916,11 @@ function DrawScene(thisFrameTimeStamp) {
                 }
             }
         }
-    } else if (
+    } 
+    else if (
         document.getElementById("Debug_SceneSingle").selectedIndex == 1
-    ) {
+    ) 
+    {
         for (var iy = 0; iy < 9; ++iy) {
             for (var ix = 0; ix < 9; ++ix) {
                 var rotMultiply = Math.sin((ix + 0.3) * (iy + 0.7)) % 1;
@@ -1938,9 +1964,11 @@ function DrawScene(thisFrameTimeStamp) {
                 }
             }
         }
-    } else if (
+    } 
+    else if (
         document.getElementById("Debug_SceneSingle").selectedIndex == 2
-    ) {
+    ) 
+    {
         for (var iz = 0; iz < 9; ++iz) {
             for (var iy = 0; iy < 9; ++iy) {
                 for (var ix = 0; ix < 9; ++ix) {
@@ -1989,7 +2017,8 @@ function DrawScene(thisFrameTimeStamp) {
         }
     }
     // else draw a single one
-    else {
+    else 
+    {
         if (objectType == 0) {
             DrawSphere(
                 [0, 0, 0],
@@ -2032,52 +2061,25 @@ function DrawScene(thisFrameTimeStamp) {
     // draw the light sources if we should
     if ( document.getElementById("Debug_DrawPointLights").checked ) 
     {
-        var color = GetLightColor(0);
-        DrawSphere( GetLightPos(0),
-            [0, 0, 0],
-            [0.1, 0.1, 0.1],
-            [0, 0, 0],
-            color,
-            0,
-            0,
-            0,
-            null
+        var color = GetLightColor( 0 );
+        DrawSphere( 
+            GetLightPos( 0 ), [0, 0, 0], [0.1, 0.1, 0.1],
+            [0, 0, 0], color, 0, 0, 0, null
         );
-        color = GetLightColor(1);
+        color = GetLightColor( 1 );
         DrawSphere(
-            GetLightPos(1),
-            [0, 0, 0],
-            [0.1, 0.1, 0.1],
-            [0, 0, 0],
-            color,
-            0,
-            0,
-            0,
-            null
+            GetLightPos( 1 ), [0, 0, 0], [0.1, 0.1, 0.1],
+            [0, 0, 0], color, 0, 0, 0, null
         );
-        color = GetLightColor(2);
+        color = GetLightColor( 2 );
         DrawSphere(
-            GetLightPos(2),
-            [0, 0, 0],
-            [0.1, 0.1, 0.1],
-            [0, 0, 0],
-            color,
-            0,
-            0,
-            0,
-            null
+            GetLightPos( 2 ), [0, 0, 0], [0.1, 0.1, 0.1],
+            [0, 0, 0], color, 0, 0, 0, null
         );
-        color = GetLightColor(3);
+        color = GetLightColor( 3 );
         DrawSphere(
-            GetLightPos(3),
-            [0, 0, 0],
-            [0.1, 0.1, 0.1],
-            [0, 0, 0],
-            color,
-            0,
-            0,
-            0,
-            null
+            GetLightPos( 3 ), [0, 0, 0], [0.1, 0.1, 0.1],
+            [0, 0, 0], color, 0, 0, 0, null
         );
     }
 
@@ -2109,25 +2111,30 @@ function ToggleDebugPanel()
     }
 }
 
-//=========================================================================================
-function OnKeyDown( event ) {
-    g_keyState[event.keyCode] = true;
+/**
+ * 
+ * @param {KeyboardEvent} event 
+ */
+function OnKeyDown( event ) 
+{
+    g_keyState[ event.keyCode ] = true ;
 }
 
-//=========================================================================================
-function OnKeyUp(event) {
-    g_keyState[event.keyCode] = false;
+function OnKeyUp( event ) 
+{
+    g_keyState[ event.keyCode ] = false ;
 }
 
-//=========================================================================================
-function OnRenderWindowClick() {
-    if ( !g_pointerLocked ) {
+function OnRenderWindowClick() 
+{
+    if ( !g_pointerLocked ) 
+    {
         g_canvas.requestPointerLock();
     }
 }
 
-//=========================================================================================
-function PointerLockChangeCallback() {
+function PointerLockChangeCallback() 
+{
     if ( document.pointerLockElement        === g_canvas ||
          document.mozPointerLockElement     === g_canvas ||
          document.webkitPointerLockElement  === g_canvas ) 
@@ -2146,20 +2153,24 @@ function PointerLockChangeCallback() {
     }
 }
 
-//=========================================================================================
-function MouseMoveCallback( e ) {
+/**
+ * 
+ * @param {MouseEvent} e 
+ */
+function MouseMoveCallback( e )
+{
 
-    var movementX = e.movementX || e.mozMovementX || e.webkitMovementX || 0;
-    var movementY = e.movementY || e.mozMovementY || e.webkitMovementY || 0;
+    var movementX = e.movementX || e.mozMovementX || e.webkitMovementX || 0 ;
+    var movementY = e.movementY || e.mozMovementY || e.webkitMovementY || 0 ;
 
     g_cameraYawPitchRoll[0] -= g_cameraRotateSpeed * movementX ;
     g_cameraYawPitchRoll[1] -= g_cameraRotateSpeed * movementY ;
 
     // limit pitch to keep from flipping over
     if ( g_cameraYawPitchRoll[1] < -Math.PI / 2 )
-        g_cameraYawPitchRoll[1] = -Math.PI / 2;
+        g_cameraYawPitchRoll[1] = -Math.PI / 2 ;
     else if ( g_cameraYawPitchRoll[1] > Math.PI / 2 )
-        g_cameraYawPitchRoll[1] = Math.PI / 2;
+        g_cameraYawPitchRoll[1] = Math.PI / 2 ;
 
     UpdateCameraMatrix();
 }
@@ -2170,14 +2181,15 @@ function MouseMoveCallback( e ) {
  * @param {number[]} pos 
  * @returns {number[]}
  */
-function CalculateNormals( pos ) {
+function CalculateNormals( pos ) 
+{
 
     var normals = [];
 
     // for each triangle
     for ( var index = 0 ; index < pos.length ; index += 9 ) 
     {
-        var point0  = pos.slice( index    , index + 3 );
+        var point0  = pos.slice( index + 0, index + 3 );
         var point1  = pos.slice( index + 3, index + 6 );
         var point2  = pos.slice( index + 6, index + 9 );
 
@@ -2206,7 +2218,8 @@ function CalculateNormals( pos ) {
  * @param {number[]} uv 
  * @returns {number[]}
  */
-function CalculateTangents( pos, uv ) {
+function CalculateTangents( pos, uv ) 
+{
 
     var tangents = [];
 
@@ -2214,11 +2227,11 @@ function CalculateTangents( pos, uv ) {
     var uvIndex = 0;
     for ( var index = 0 ; index < pos.length ; index += 9 ) 
     {
-        var point0  = pos.slice( index    , index + 3 );
+        var point0  = pos.slice( index + 0, index + 3 );
         var point1  = pos.slice( index + 3, index + 6 );
         var point2  = pos.slice( index + 6, index + 9 );
 
-        var uv0     = uv.slice( uvIndex    , uvIndex + 2 );
+        var uv0     = uv.slice( uvIndex + 0, uvIndex + 2 );
         var uv1     = uv.slice( uvIndex + 2, uvIndex + 4 );
         var uv2     = uv.slice( uvIndex + 4, uvIndex + 6 );
 
@@ -2231,13 +2244,13 @@ function CalculateTangents( pos, uv ) {
         var f       = 1 / ( deltaUV1[0] * deltaUV2[1] - deltaUV2[0] * deltaUV1[1] );
 
         var tangent = [];
-        tangent[0]  = f * ( deltaUV2[1] * edge1[0] - deltaUV1[1] * edge2[0]);
-        tangent[1]  = f * ( deltaUV2[1] * edge1[1] - deltaUV1[1] * edge2[1]);
-        tangent[2]  = f * ( deltaUV2[1] * edge1[2] - deltaUV1[1] * edge2[2]);
+        tangent[0]  = f * ( deltaUV2[1] * edge1[0] - deltaUV1[1] * edge2[0] );
+        tangent[1]  = f * ( deltaUV2[1] * edge1[1] - deltaUV1[1] * edge2[1] );
+        tangent[2]  = f * ( deltaUV2[1] * edge1[2] - deltaUV1[1] * edge2[2] );
 
-        tangents    = tangents.concat(tangent);
-        tangents    = tangents.concat(tangent);
-        tangents    = tangents.concat(tangent);
+        tangents    = tangents.concat( tangent );
+        tangents    = tangents.concat( tangent );
+        tangents    = tangents.concat( tangent );
 
         uvIndex     += 6;
     }
@@ -2260,7 +2273,8 @@ function CalculateTangents( pos, uv ) {
  * 
  * @returns {MYMesh}
  */
-function GenerateTetrahedronMesh() {
+function GenerateTetrahedronMesh()
+{
     var ret = {};
 
     var pos = [];
@@ -2325,7 +2339,8 @@ function GenerateTetrahedronMesh() {
 }
 
 //=========================================================================================
-function GenerateCubeMesh() {
+function GenerateCubeMesh()
+{
     var ret = {};
 
     var pos = [];
@@ -2473,7 +2488,8 @@ function GenerateCubeMesh() {
  * @param {number} slicesY 
  * @returns {MYMesh}
  */
-function GenerateSphereMesh( slicesX, slicesY ) {
+function GenerateSphereMesh( slicesX, slicesY )
+{
 
     /**@type {MYMesh}*/
     var ret     = {};
@@ -2634,7 +2650,8 @@ function loadImage( url, callback ) {
 }
 
 //=========================================================================================
-function MakeSkyboxImagePath(type, path, suffix) {
+function MakeSkyboxImagePath( type, path, suffix )
+{
     //types:
     // 0 = skybox
     // 1 = diffuse
@@ -2651,12 +2668,13 @@ function MakeSkyboxImagePath(type, path, suffix) {
 /**
  * 텍스쳐 이미지 다운로드 후 HTMLImageElement[] 배열로 저장
  */
-function LoadImagesAndRender() {
+function LoadImagesAndRender() 
+{
     // get the unique list of images to load
     var loadingImagesSet = new Set();
     for ( var index = 0 ; index < g_loadImages.length ; ++index )
     {
-        loadingImagesSet.add( g_loadImages[index] );
+        loadingImagesSet.add( g_loadImages[ index ] );
     }
     for ( var key in g_materials ) 
     {
@@ -2665,8 +2683,10 @@ function LoadImagesAndRender() {
             loadingImagesSet.add( g_materials[key][index] );
         }
     }
-    for ( var key in g_skyboxes ) {
-        for ( var type = 0 ; type <= 6 ; ++type ) {
+    for ( var key in g_skyboxes ) 
+    {
+        for ( var type = 0 ; type <= 6 ; ++type ) 
+        {
             loadingImagesSet.add(
                 MakeSkyboxImagePath( type, g_skyboxes[key], "Back.png" )
             );
@@ -2687,21 +2707,26 @@ function LoadImagesAndRender() {
             );
         }
     }
-    var loadingImages       = Array.from(loadingImagesSet);
+
+    var loadingImages       = Array.from( loadingImagesSet );
     var imagesToLoad        = loadingImages.length;
     var totalImagesToLoad   = imagesToLoad;
 
+    /**
+     * @type {Image[]}
+     */
     var images              = [];
 
     document.getElementById("Loading").innerText =
         "Loading Images: " +
-        (totalImagesToLoad - imagesToLoad + 1) +
+        ( totalImagesToLoad - imagesToLoad + 1 ) +
         " / " +
-        totalImagesToLoad;
+        totalImagesToLoad ;
     document.getElementById("Loading").style.left = "50%";
 
     // Called each time an image finished loading.
     var onImageLoad = function () {
+
         --imagesToLoad;
 
         // update the loading progress overlay
@@ -2713,14 +2738,16 @@ function LoadImagesAndRender() {
         document.getElementById("Loading").style.left = "50%";
 
         // If all the images are loaded call the callback.
-        if (imagesToLoad == 0) {
+        if ( imagesToLoad == 0 ) 
+        {
             // hide the loading progress overlay
             document.getElementById("Loading").style.visibility = "hidden";
 
             // create all the 2d images (even of skybox images, in case we want to use them for 2d stuff for some reason)
-            for (var i = 0; i < images.length; ++i) {
-                var texture = gl.createTexture();
-                gl.bindTexture(gl.TEXTURE_2D, texture);
+            for ( var i = 0 ; i < images.length ; ++i )
+            {
+                var texture = gl.createTexture() ;
+                gl.bindTexture( gl.TEXTURE_2D, texture );
 
                 gl.texImage2D(
                     gl.TEXTURE_2D,
@@ -2731,88 +2758,42 @@ function LoadImagesAndRender() {
                     images[i]
                 );
 
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
-                gl.texParameteri(
-                    gl.TEXTURE_2D,
-                    gl.TEXTURE_MIN_FILTER,
-                    gl.LINEAR_MIPMAP_LINEAR
-                );
-                gl.texParameteri(
-                    gl.TEXTURE_2D,
-                    gl.TEXTURE_MAG_FILTER,
-                    gl.LINEAR
-                );
+                gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT );
+                gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT );
+                gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR );
+                gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR );
+                gl.generateMipmap( gl.TEXTURE_2D );
 
-                gl.generateMipmap(gl.TEXTURE_2D);
                 g_images[loadingImages[i]] = texture;
             }
-            gl.bindTexture(gl.TEXTURE_2D, null);
+
+            gl.bindTexture( gl.TEXTURE_2D, null );
 
             // create all the skyboxes
-            for (var key in g_skyboxes) {
+            for ( var key in g_skyboxes )
+            {
                 // create the individual skyboxes
                 g_skyboxImages[key] = [];
-                for (var type = 0; type <= 6; ++type) {
-                    var texture = gl.createTexture();
-                    gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
+                for ( var type = 0 ; type <= 6 ; ++type ) 
+                {
+                    var texture = gl.createTexture() ;
+                    gl.bindTexture( gl.TEXTURE_CUBE_MAP, texture ) ;
 
-                    for (
-                        var imageIndex = 0;
-                        imageIndex < images.length;
-                        ++imageIndex
-                    ) {
+                    for ( var imageIndex = 0 ; imageIndex < images.length ; ++imageIndex )
+                    {
                         var side = null;
 
-                        if (
-                            images[imageIndex].rawSrc ==
-                            MakeSkyboxImagePath(
-                                type,
-                                g_skyboxes[key],
-                                "Back.png"
-                            )
-                        )
+                        if ( images[ imageIndex ].rawSrc == MakeSkyboxImagePath( type, g_skyboxes[ key ], "Back.png" ) )
                             side = gl.TEXTURE_CUBE_MAP_NEGATIVE_Z;
-                        else if (
-                            images[imageIndex].rawSrc ==
-                            MakeSkyboxImagePath(
-                                type,
-                                g_skyboxes[key],
-                                "Down.png"
-                            )
-                        )
+                        else if ( images[ imageIndex ].rawSrc == MakeSkyboxImagePath( type, g_skyboxes[ key ], "Down.png" ) )
                             side = gl.TEXTURE_CUBE_MAP_NEGATIVE_Y;
-                        else if (
-                            images[imageIndex].rawSrc ==
-                            MakeSkyboxImagePath(
-                                type,
-                                g_skyboxes[key],
-                                "Front.png"
-                            )
-                        )
+                        else if ( images[ imageIndex ].rawSrc == MakeSkyboxImagePath( type, g_skyboxes[ key ], "Front.png" ) )
                             side = gl.TEXTURE_CUBE_MAP_POSITIVE_Z;
-                        else if (
-                            images[imageIndex].rawSrc ==
-                            MakeSkyboxImagePath(
-                                type,
-                                g_skyboxes[key],
-                                "Left.png"
-                            )
-                        )
+                        else if ( images[ imageIndex ].rawSrc == MakeSkyboxImagePath( type, g_skyboxes[ key ], "Left.png" ) )
                             side = gl.TEXTURE_CUBE_MAP_NEGATIVE_X;
-                        else if (
-                            images[imageIndex].rawSrc ==
-                            MakeSkyboxImagePath(
-                                type,
-                                g_skyboxes[key],
-                                "Right.png"
-                            )
-                        )
+                        else if ( images[ imageIndex ].rawSrc == MakeSkyboxImagePath( type, g_skyboxes[ key ], "Right.png" ) )
                             side = gl.TEXTURE_CUBE_MAP_POSITIVE_X;
-                        else if (
-                            images[imageIndex].rawSrc ==
-                            MakeSkyboxImagePath(type, g_skyboxes[key], "Up.png")
-                        )
+                        else if ( images[ imageIndex ].rawSrc == MakeSkyboxImagePath( type, g_skyboxes[ key ], "Up.png" ) )
                             side = gl.TEXTURE_CUBE_MAP_POSITIVE_Y;
                         else continue;
 
@@ -2822,7 +2803,7 @@ function LoadImagesAndRender() {
                             gl.RGBA,
                             gl.RGBA,
                             gl.UNSIGNED_BYTE,
-                            images[imageIndex]
+                            images[ imageIndex ]
                         );
                     }
 
@@ -2857,14 +2838,11 @@ function LoadImagesAndRender() {
 
                 // create the custom mip mapped sky boxes (pre-integrated roughness)
                 var texture = gl.createTexture();
-                gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
+                gl.bindTexture( gl.TEXTURE_CUBE_MAP, texture );
 
                 // first we have to fill in mip zero with data
-                for (
-                    var imageIndex = 0;
-                    imageIndex < images.length;
-                    ++imageIndex
-                ) {
+                for ( var imageIndex = 0; imageIndex < images.length; ++imageIndex )
+                {
                     var side = null;
 
                     {
@@ -2935,14 +2913,11 @@ function LoadImagesAndRender() {
                 }
 
                 // then we can generate mipmaps from that data
-                gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+                gl.generateMipmap( gl.TEXTURE_CUBE_MAP );
 
                 // then we can fill in the mips with our custom images
-                for (
-                    var imageIndex = 0;
-                    imageIndex < images.length;
-                    ++imageIndex
-                ) {
+                for ( var imageIndex = 0 ; imageIndex < images.length ; ++imageIndex )
+                {
                     var side = null;
 
                     for (var type = 3; type <= 6; ++type) {
@@ -3039,7 +3014,7 @@ function LoadImagesAndRender() {
 
                 g_skyboxImages[key][7] = texture;
             }
-            gl.bindTexture(gl.TEXTURE_CUBE_MAP, null);
+            gl.bindTexture( gl.TEXTURE_CUBE_MAP, null );
 
             // start rendering
             DrawScene();
@@ -3189,6 +3164,7 @@ function Initialize() {
 
     // make each shader permutation
     var permuteCount        = GetNumShaderPermutations();
+    console.log( "Permute Count : " + permuteCount ) ;
     for ( var i = 0 ; i < GetNumShaderPermutations() ; ++i ) 
     {
         // make permutation specific defines
