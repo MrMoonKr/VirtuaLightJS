@@ -140,126 +140,126 @@ var g_uniforms =
     u_projectionMatrix: [
         "mat4",
         ( key, location, objectValues ) => {
-            gl.uniformMatrix4fv( location, false, g_projectionMatrix);
+            gl.uniformMatrix4fv( location, false, g_projectionMatrix );
         },
     ],
     u_cameraMatrix: [
         "mat4",
-        (key, location, objectValues) => {
-            gl.uniformMatrix4fv(location, false, g_cameraMatrix);
+        ( key, location, objectValues ) => {
+            gl.uniformMatrix4fv( location, false, g_cameraMatrix );
         },
     ],
     u_screenResolution: [
         "vec2",
-        (key, location, objectValues) => {
-            gl.uniform2fv(location, [gl.canvas.width, gl.canvas.height]);
+        ( key, location, objectValues ) => {
+            gl.uniform2fv( location, [ gl.canvas.width, gl.canvas.height ] );
         },
     ],
 
     u_cameraPosition: [
         "vec3",
-        (key, location, objectValues) => {
-            gl.uniform3fv(location, g_cameraPosition);
+        ( key, location, objectValues ) => {
+            gl.uniform3fv( location, g_cameraPosition );
         },
     ],
 
     u_ambientLight: [
         "vec3",
-        (key, location, objectValues) => {
-            gl.uniform3fv(location, g_ambientLight);
+        ( key, location, objectValues ) => {
+            gl.uniform3fv( location, g_ambientLight );
         },
     ],
 
     u_light0Pos: [
         "vec3",
-        (key, location, objectValues) => {
-            var pos = GetLightPos(0);
-            gl.uniform3fv(location, pos);
+        ( key, location, objectValues ) => {
+            var pos = GetLightPos( 0 );
+            gl.uniform3fv( location, pos );
         },
     ],
     u_light0Color: [
         "vec3",
-        (key, location, objectValues) => {
-            var color = GetLightColor(0);
-            gl.uniform3fv(location, color);
+        ( key, location, objectValues ) => {
+            var color = GetLightColor( 0 );
+            gl.uniform3fv( location, color );
         },
     ],
 
     u_light1Pos: [
         "vec3",
-        (key, location, objectValues) => {
-            var pos = GetLightPos(1);
-            gl.uniform3fv(location, pos);
+        ( key, location, objectValues ) => {
+            var pos = GetLightPos( 1 );
+            gl.uniform3fv( location, pos );
         },
     ],
     u_light1Color: [
         "vec3",
-        (key, location, objectValues) => {
-            var color = GetLightColor(1);
-            gl.uniform3fv(location, color);
+        ( key, location, objectValues ) => {
+            var color = GetLightColor( 1 );
+            gl.uniform3fv( location, color );
         },
     ],
 
     u_light2Pos: [
         "vec3",
-        (key, location, objectValues) => {
-            var pos = GetLightPos(2);
-            gl.uniform3fv(location, pos);
+        ( key, location, objectValues ) => {
+            var pos = GetLightPos( 2 );
+            gl.uniform3fv( location, pos );
         },
     ],
     u_light2Color: [
         "vec3",
-        (key, location, objectValues) => {
-            var color = GetLightColor(2);
-            gl.uniform3fv(location, color);
+        ( key, location, objectValues ) => {
+            var color = GetLightColor( 2 );
+            gl.uniform3fv( location, color );
         },
     ],
 
     u_light3Pos: [
         "vec3",
-        (key, location, objectValues) => {
-            var pos = GetLightPos(3);
-            gl.uniform3fv(location, pos);
+        ( key, location, objectValues ) => {
+            var pos = GetLightPos( 3 );
+            gl.uniform3fv( location, pos );
         },
     ],
     u_light3Color: [
         "vec3",
-        (key, location, objectValues) => {
-            var color = GetLightColor(3);
-            gl.uniform3fv(location, color);
+        ( key, location, objectValues ) => {
+            var color = GetLightColor( 3 );
+            gl.uniform3fv( location, color );
         },
     ],
 
     u_lightDir: [
         "vec3",
-        (key, location, objectValues) => {
-            gl.uniform3fv(location, g_lightDir);
+        ( key, location, objectValues ) => {
+            gl.uniform3fv( location, g_lightDir );
         },
     ],
     u_lightDirColor: [
         "vec3",
-        (key, location, objectValues) => {
+        ( key, location, objectValues ) => {
             var color = GetDirectionalLightColor();
-            gl.uniform3fv(location, color);
+            gl.uniform3fv( location, color );
         },
     ],
     u_lightDirType: [
         "float",
-        (key, location, objectValues) => {
-            gl.uniform1f(location, GetObjectValue(objectValues, key));
+        ( key, location, objectValues ) => {
+            gl.uniform1f( location, GetObjectValue( objectValues, key ) );
         },
     ],
 
     u_normalMapping: [
         "float",
-        (key, location, objectValues) => {
-            gl.uniform1f(location, GetObjectValue(objectValues, key));
+        ( key, location, objectValues ) => {
+            gl.uniform1f( location, GetObjectValue( objectValues, key ) );
         },
     ],
     u_AO: [
         "float",
-        (key, location, objectValues) => {
-            gl.uniform1f(location, GetObjectValue(objectValues, key));
+        ( key, location, objectValues ) => {
+            gl.uniform1f( location, GetObjectValue( objectValues, key ) );
         },
     ],
 
@@ -277,111 +277,105 @@ var g_uniforms =
     ],
     u_objectAlbedo: [
         "vec3",
-        (key, location, objectValues) => {
-            gl.uniform3fv(location, GetObjectValue(objectValues, key));
+        ( key, location, objectValues ) => {
+            gl.uniform3fv( location, GetObjectValue( objectValues, key ) );
         },
     ],
     u_objectEmissive: [
         "vec3",
-        (key, location, objectValues) => {
-            gl.uniform3fv(location, GetObjectValue(objectValues, key));
+        ( key, location, objectValues ) => {
+            gl.uniform3fv( location, GetObjectValue( objectValues, key ) );
         },
     ],
     u_objectMetallic: [
         "float",
-        (key, location, objectValues) => {
-            gl.uniform1f(location, GetObjectValue(objectValues, key));
+        ( key, location, objectValues ) => {
+            gl.uniform1f( location, GetObjectValue( objectValues, key ) );
         },
     ],
     u_objectRoughness: [
         "float",
-        (key, location, objectValues) => {
-            gl.uniform1f(location, GetObjectValue(objectValues, key));
+        ( key, location, objectValues ) => {
+            gl.uniform1f( location, GetObjectValue( objectValues, key ) );
         },
     ],
     u_objectAO: [
         "float",
-        (key, location, objectValues) => {
-            gl.uniform1f(location, GetObjectValue(objectValues, key));
+        ( key, location, objectValues ) => {
+            gl.uniform1f( location, GetObjectValue( objectValues, key ) );
         },
     ],
     u_objectF0: [
         "float",
-        (key, location, objectValues) => {
-            gl.uniform1f(location, GetObjectValue(objectValues, key));
+        ( key, location, objectValues ) => {
+            gl.uniform1f( location, GetObjectValue( objectValues, key ) );
         },
     ],
 
     u_textureAlbedo: [
         "sampler2D",
-        (key, location, objectValues) => {
-            gl.activeTexture(gl.TEXTURE0);
-            gl.bindTexture(gl.TEXTURE_2D, GetObjectValue(objectValues, key));
-            gl.uniform1i(location, 0);
+        ( key, location, objectValues ) => {
+            gl.activeTexture( gl.TEXTURE0 );
+            gl.bindTexture( gl.TEXTURE_2D, GetObjectValue( objectValues, key ) );
+            gl.uniform1i( location, 0 );
         },
     ],
     u_textureMetallic: [
         "sampler2D",
-        (key, location, objectValues) => {
-            gl.activeTexture(gl.TEXTURE1);
-            gl.bindTexture(gl.TEXTURE_2D, GetObjectValue(objectValues, key));
-            gl.uniform1i(location, 1);
+        ( key, location, objectValues ) => {
+            gl.activeTexture( gl.TEXTURE1 );
+            gl.bindTexture( gl.TEXTURE_2D, GetObjectValue( objectValues, key ) );
+            gl.uniform1i( location, 1 );
         },
     ],
     u_textureRoughness: [
         "sampler2D",
-        (key, location, objectValues) => {
-            gl.activeTexture(gl.TEXTURE2);
-            gl.bindTexture(gl.TEXTURE_2D, GetObjectValue(objectValues, key));
-            gl.uniform1i(location, 2);
+        ( key, location, objectValues ) => {
+            gl.activeTexture( gl.TEXTURE2 );
+            gl.bindTexture( gl.TEXTURE_2D, GetObjectValue( objectValues, key ) );
+            gl.uniform1i( location, 2 );
         },
     ],
     u_textureNormal: [
         "sampler2D",
-        (key, location, objectValues) => {
-            gl.activeTexture(gl.TEXTURE3);
-            gl.bindTexture(gl.TEXTURE_2D, GetObjectValue(objectValues, key));
-            gl.uniform1i(location, 3);
+        ( key, location, objectValues ) => {
+            gl.activeTexture( gl.TEXTURE3 );
+            gl.bindTexture( gl.TEXTURE_2D, GetObjectValue( objectValues, key ) );
+            gl.uniform1i( location, 3 );
         },
     ],
     u_textureAO: [
         "sampler2D",
-        (key, location, objectValues) => {
-            gl.activeTexture(gl.TEXTURE4);
-            gl.bindTexture(gl.TEXTURE_2D, GetObjectValue(objectValues, key));
-            gl.uniform1i(location, 4);
+        ( key, location, objectValues ) => {
+            gl.activeTexture( gl.TEXTURE4 );
+            gl.bindTexture( gl.TEXTURE_2D, GetObjectValue( objectValues, key ) );
+            gl.uniform1i( location, 4 );
         },
     ],
 
     u_splitSum: [
         "sampler2D",
-        (key, location, objectValues) => {
-            gl.activeTexture(gl.TEXTURE5);
-            gl.bindTexture(gl.TEXTURE_2D, GetObjectValue(objectValues, key));
-            gl.uniform1i(location, 5);
+        ( key, location, objectValues ) => {
+            gl.activeTexture( gl.TEXTURE5 );
+            gl.bindTexture( gl.TEXTURE_2D, GetObjectValue( objectValues, key ) );
+            gl.uniform1i( location, 5 );
         },
     ],
 
     u_diffuseIBL: [
         "samplerCube",
-        (key, location, objectValues) => {
-            gl.activeTexture(gl.TEXTURE6);
-            gl.bindTexture(
-                gl.TEXTURE_CUBE_MAP,
-                GetObjectValue(objectValues, key)
-            );
-            gl.uniform1i(location, 6);
+        ( key, location, objectValues ) => {
+            gl.activeTexture( gl.TEXTURE6 );
+            gl.bindTexture( gl.TEXTURE_CUBE_MAP, GetObjectValue( objectValues, key ) );
+            gl.uniform1i( location, 6 );
         },
     ],
     u_specularIBL: [
         "samplerCube",
-        (key, location, objectValues) => {
-            gl.activeTexture(gl.TEXTURE7);
-            gl.bindTexture(
-                gl.TEXTURE_CUBE_MAP,
-                GetObjectValue(objectValues, key)
-            );
-            gl.uniform1i(location, 7);
+        ( key, location, objectValues ) => {
+            gl.activeTexture( gl.TEXTURE7 );
+            gl.bindTexture( gl.TEXTURE_CUBE_MAP, GetObjectValue( objectValues, key ) );
+            gl.uniform1i( location, 7 );
         },
     ],
 };
@@ -410,8 +404,8 @@ out vec3    u_uvw;
 
 void main()
 {
-    u_uvw       = a_position.xyz;
-    gl_Position = (u_projectionMatrix * mat4(mat3(u_cameraMatrix)) * a_position).xyww;
+    u_uvw       = a_position.xyz ;
+    gl_Position = ( u_projectionMatrix * mat4( mat3( u_cameraMatrix ) ) * a_position ).xyww ;
 }  
 `;
 
@@ -420,60 +414,62 @@ var skyboxFragmentShaderSource = `
 
     #pragma vscode_glsllint_stage: STAGE
 
-    in vec3     u_uvw;
-    out vec4    outColor;
+    in vec3     u_uvw ;
+    out vec4    outColor ;
 
     void main()
     {    
-        outColor    = texture( u_diffuseIBL, u_uvw );
+        outColor = texture( u_diffuseIBL, u_uvw );
     }
     `;
 
 //=========================================================================================
 var vertexShaderSource = 
 `
-#pragma vscode_glsllint_stage: STAGE
+    #pragma vscode_glsllint_stage: STAGE
 
-// vertex input
-in vec4     a_position;
-in vec3     a_normal;
-in vec3     a_tangent;
-in vec2     a_uv;
-in vec3     a_barycentric;
+    // vertex input
+    in vec4     a_position;
+    in vec3     a_normal;
+    in vec3     a_tangent;
+    in vec2     a_uv;
+    in vec3     a_barycentric;
 
-// vertex output
-out vec3    v_worldPos;
-out vec3    v_normal;
-out vec3    v_tangent;
-out vec2    v_uv;
-out vec3    v_barycentric;
-out mat3    v_tbn;
+    // vertex output
+    out vec3    v_worldPos;
+    out vec3    v_normal;
+    out vec3    v_tangent;
+    out vec2    v_uv;
+    out vec3    v_barycentric;
+    out mat3    v_tbn;
 
-void main()
-{
-    // 메시정점의 월드변환
-    v_worldPos      = ( u_objectMatrix * a_position ).xyz;
+    void main()
+    {
+        // 메시정점의 월드변환
+        v_worldPos      = ( u_objectMatrix * a_position ).xyz ;
 
-    // This offloads inverse transpose matrix calculation to the GPU, but is done per vertex instead of per object.
-    //v_normal        = mat3(transpose(inverse(u_objectMatrix))) * a_normal;
+        // This offloads inverse transpose matrix calculation to the GPU, but is done per vertex instead of per object.
+        //v_normal        = mat3( transpose( inverse( u_objectMatrix ) ) ) * a_normal ;
 
-    // write out the world space normal and tangent vectors
-    // 법선벡터와 탄젠트벡터를 로컬좌표계로
-    v_normal        = mat3( u_invTransObjectMatrix ) * a_normal;
-    v_tangent       = mat3( u_invTransObjectMatrix ) * a_tangent;  
+        // write out the world space normal and tangent vectors
+        // 법선벡터와 탄젠트벡터를 모델좌표계로
+        v_normal        = mat3( u_invTransObjectMatrix ) * a_normal ;
+        v_tangent       = mat3( u_invTransObjectMatrix ) * a_tangent ;
 
-    // make TBN matrix via Gram-Schmidt process
-    vec3 T          = normalize( vec3( u_objectMatrix * vec4( a_tangent, 0.0 ) ) );
-    vec3 N          = normalize( vec3( u_objectMatrix * vec4( a_normal,  0.0 ) ) );
-    T               = normalize( T - dot( T, N ) * N );
-    vec3 B          = cross( N, T );
-    v_tbn           = mat3( T, B, N );  
+        // make TBN matrix via Gram-Schmidt process
+        // 법선벡터와 탄젠트벡터로 부터 TBN 행렬구하기
+        vec3 T          = normalize( vec3( u_objectMatrix * vec4( a_tangent, 0.0 ) ) ) ;
+        vec3 N          = normalize( vec3( u_objectMatrix * vec4( a_normal,  0.0 ) ) ) ;
+        T               = normalize( T - dot( T, N ) * N ) ;
+        vec3 B          = cross( N, T ) ;
+        v_tbn           = mat3( T, B, N ) ;
 
-    v_uv            = a_uv;
-    v_barycentric   = a_barycentric;
+        v_uv            = a_uv ;
+        v_barycentric   = a_barycentric ;
 
-    gl_Position     = u_projectionMatrix * u_cameraMatrix * u_objectMatrix * a_position;
-}`;
+        gl_Position     = u_projectionMatrix * u_cameraMatrix * u_objectMatrix * a_position ;
+    }
+`;
 
 //=========================================================================================
 var fragmentShaderSource = 
@@ -1018,7 +1014,7 @@ function MakeShader( vertexSource, fragmentSource, permutationSource )
     shader.uniforms = {};
     for ( var key in g_uniforms )
     {
-        shader.uniforms[key] = gl.getUniformLocation( shader.program, key );
+        shader.uniforms[ key ] = gl.getUniformLocation( shader.program, key );
     }
 
     // return the shader to the caller
@@ -1127,7 +1123,7 @@ function MultiplyMatrix4x4( A, B )
 }
 
 /**
- * 카메라 행렬 만들기
+ * 카메라행렬 만들기 ( 카메라 월드 행렬의 역행렬 )
  * @param {*} yawPitchRoll 
  * @param {*} translation 
  * @returns 
@@ -1190,16 +1186,23 @@ function CameraMatrix( yawPitchRoll, translation )
     return MultiplyMatrix4x4( trans, rot );
 }
 
-//=========================================================================================
-function TransformationMatrix(yawPitchRoll, translation, scale) {
-    var cosAlpha = Math.cos(yawPitchRoll[2]);
-    var sinAlpha = Math.sin(yawPitchRoll[2]);
+/**
+ * 월드변환행렬 얻기
+ * @param {number[3]} yawPitchRoll 회전 
+ * @param {*} translation 위치
+ * @param {*} scale 크기
+ * @returns 
+ */
+function TransformationMatrix( yawPitchRoll, translation, scale ) 
+{
+    var cosAlpha    = Math.cos(yawPitchRoll[2]);
+    var sinAlpha    = Math.sin(yawPitchRoll[2]);
 
-    var cosBeta = Math.cos(yawPitchRoll[0]);
-    var sinBeta = Math.sin(yawPitchRoll[0]);
+    var cosBeta     = Math.cos(yawPitchRoll[0]);
+    var sinBeta     = Math.sin(yawPitchRoll[0]);
 
-    var cosGamma = Math.cos(yawPitchRoll[1]);
-    var sinGamma = Math.sin(yawPitchRoll[1]);
+    var cosGamma    = Math.cos(yawPitchRoll[1]);
+    var sinGamma    = Math.sin(yawPitchRoll[1]);
 
     var rot = [
         cosAlpha * cosBeta,
@@ -1262,7 +1265,8 @@ function TransformationMatrix(yawPitchRoll, translation, scale) {
 }
 
 //=========================================================================================
-function MatrixTranspose4x4(matrix) {
+function MatrixTranspose4x4( matrix ) 
+{
     return [
         matrix[0 * 4 + 0],
         matrix[1 * 4 + 0],
@@ -1284,11 +1288,8 @@ function MatrixTranspose4x4(matrix) {
 }
 
 //=========================================================================================
-function InverseTransposeTransformationMatrix(
-    yawPitchRoll,
-    translation,
-    scale
-) {
+function InverseTransposeTransformationMatrix( yawPitchRoll, translation, scale ) 
+{
     var cosAlpha = Math.cos(yawPitchRoll[2]);
     var sinAlpha = Math.sin(yawPitchRoll[2]);
 
@@ -1357,8 +1358,8 @@ function InverseTransposeTransformationMatrix(
         1,
     ];
 
-    var inverse = MultiplyMatrix4x4(trans, MultiplyMatrix4x4(rot, scale));
-    return MatrixTranspose4x4(inverse);
+    var inverse = MultiplyMatrix4x4( trans, MultiplyMatrix4x4( rot, scale ) );
+    return MatrixTranspose4x4( inverse );
 }
 
 //=========================================================================================
@@ -1490,11 +1491,23 @@ function FillUniformValue( key, location, objectValues )
     g_uniforms[key][1]( key, location, objectValues );
 }
 
-//=========================================================================================
+/**
+ * 
+ * @param {number[]} translation 
+ * @param {*} yawPitchRoll 
+ * @param {*} scale 
+ * @param {*} albedo 
+ * @param {*} emissive 
+ * @param {*} metallic 
+ * @param {*} roughness 
+ * @param {*} F0 
+ * @param {*} materialTextures 
+ * @returns 
+ */
 function PrepareToDrawMesh( translation, yawPitchRoll, scale, albedo, emissive, metallic, roughness, F0, materialTextures ) 
 {
     var skybox = document.getElementById("Debug_SceneIBL");
-    skybox = g_skyboxImages[skybox.options[skybox.selectedIndex].value];
+    skybox = g_skyboxImages[ skybox.options[ skybox.selectedIndex ].value ];
 
     // get the right shader to use
     var shader = g_shaders[ GetShaderPermutationIndex(
@@ -1520,14 +1533,14 @@ function PrepareToDrawMesh( translation, yawPitchRoll, scale, albedo, emissive, 
 
     // make our object values
     var objectValues = {};
-    objectValues.u_objectMatrix         = TransformationMatrix( yawPitchRoll, translation, scale );
-    objectValues.u_invTransObjectMatrix = InverseTransposeTransformationMatrix( yawPitchRoll, translation, scale );
-    objectValues.u_objectAlbedo         = albedo;
-    objectValues.u_objectEmissive       = emissive;
-    objectValues.u_objectMetallic       = metallic;
-    objectValues.u_objectRoughness      = roughness;
-    objectValues.u_objectAO             = 1.0;
-    objectValues.u_objectF0             = F0;
+    objectValues.u_objectMatrix         = TransformationMatrix( yawPitchRoll, translation, scale ) ;
+    objectValues.u_invTransObjectMatrix = InverseTransposeTransformationMatrix( yawPitchRoll, translation, scale ) ;
+    objectValues.u_objectAlbedo         = albedo ;
+    objectValues.u_objectEmissive       = emissive ;
+    objectValues.u_objectMetallic       = metallic ;
+    objectValues.u_objectRoughness      = roughness ;
+    objectValues.u_objectAO             = 1.0 ;
+    objectValues.u_objectF0             = F0 ;
 
     if ( materialTextures != null ) 
     {
@@ -3033,7 +3046,8 @@ function LoadImagesAndRender()
  * @param {MYMesh} mesh 
  * @param {WebGLProgram} program 
  */
-function MakeMeshBuffers( mesh, program ) {
+function MakeMeshBuffers( mesh, program ) 
+{
 
     // normals
     var normalAttributeLocation = gl.getAttribLocation( program, "a_normal" );
@@ -3043,7 +3057,7 @@ function MakeMeshBuffers( mesh, program ) {
         gl.bindBuffer( gl.ARRAY_BUFFER, normalBuffer );
         gl.enableVertexAttribArray( normalAttributeLocation );
         gl.vertexAttribPointer( normalAttributeLocation, 3, gl.FLOAT, false, 0, 0 );
-        gl.bufferData( gl.ARRAY_BUFFER, new Float32Array(mesh.norm), gl.STATIC_DRAW );
+        gl.bufferData( gl.ARRAY_BUFFER, new Float32Array( mesh.norm ), gl.STATIC_DRAW );
     }
 
     // tangents
@@ -3058,7 +3072,7 @@ function MakeMeshBuffers( mesh, program ) {
     }
 
     // positions
-    var positionAttributeLocation = gl.getAttribLocation(program, "a_position");
+    var positionAttributeLocation = gl.getAttribLocation( program, "a_position" );
     if ( positionAttributeLocation != -1 ) 
     {
         var positionBuffer = gl.createBuffer();
@@ -3069,7 +3083,7 @@ function MakeMeshBuffers( mesh, program ) {
     }
 
     // uv
-    var uvAttributeLocation = gl.getAttribLocation(program, "a_uv");
+    var uvAttributeLocation = gl.getAttribLocation( program, "a_uv" );
     if ( uvAttributeLocation != -1 ) 
     {
         var uvBuffer = gl.createBuffer();
@@ -3095,7 +3109,8 @@ function MakeMeshBuffers( mesh, program ) {
  * 앱 초기화
  * @returns 
  */
-function Initialize() {
+function Initialize() 
+{
 
     // fill in the material drop down list
     var option;
@@ -3148,9 +3163,9 @@ function Initialize() {
     document.addEventListener( "webkitpointerlockchange", PointerLockChangeCallback, false );
 
     // make the meshes
-    var sphereMesh          = GenerateSphereMesh(20, 20);
-    var cubeMesh            = GenerateCubeMesh();
-    var tetrahedronMesh     = GenerateTetrahedronMesh();
+    var sphereMesh          = GenerateSphereMesh( 20, 20 ) ;
+    var cubeMesh            = GenerateCubeMesh() ;
+    var tetrahedronMesh     = GenerateTetrahedronMesh() ;
 
     // make the uniform definitions for the shaders
     g_uniformsShaderSource  = "// uniform constants\n";
@@ -3160,7 +3175,7 @@ function Initialize() {
             "uniform " + g_uniforms[key][0] + " " + key + ";\n";
     }
     //console.log( 'uniform constants : ' );
-    console.log( g_uniformsShaderSource );
+    //console.log( g_uniformsShaderSource );
 
     // make each shader permutation
     var permuteCount        = GetNumShaderPermutations();
@@ -3169,7 +3184,7 @@ function Initialize() {
     {
         // make permutation specific defines
         var permutationSource = GetShaderPermutationSourceString( i );
-        console.log( '// permutation string : \n' + permutationSource );
+        //console.log( '// permutation string : \n' + permutationSource );
 
         // make the shader
         var shader          = MakeShader( vertexShaderSource, fragmentShaderSource, permutationSource );
