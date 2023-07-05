@@ -247,41 +247,6 @@ function createProgram( gl, vertexShaderSource, fragmentShaderSource )
     return program;
 };
 
-// /**
-//  * 
-//  * @param {WebGL2RenderingContext} gl 
-//  * @param {string} vertexShaderSource 
-//  * @param {string} fragmentShaderSource 
-//  * @returns {WebGLProgram}
-//  */
-// window.createProgram = function( gl, vertexShaderSource, fragmentShaderSource )
-// {
-//     var program = gl.createProgram();
-//     var vshader = createShader( gl, vertexShaderSource, gl.VERTEX_SHADER );
-//     var fshader = createShader( gl, fragmentShaderSource, gl.FRAGMENT_SHADER );
-//     gl.attachShader(program, vshader);
-//     gl.deleteShader(vshader);
-//     gl.attachShader(program, fshader);
-//     gl.deleteShader(fshader);
-//     gl.linkProgram(program);
-
-//     var log = gl.getProgramInfoLog(program);
-//     if (log) {
-//         console.log(log);
-//     }
-
-//     log = gl.getShaderInfoLog(vshader);
-//     if (log) {
-//         console.log(log);
-//     }
-
-//     log = gl.getShaderInfoLog(fshader);
-//     if (log) {
-//         console.log(log);
-//     }
-
-//     return program;
-// };
 
 /**
  * 

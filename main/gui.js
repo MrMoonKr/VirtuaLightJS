@@ -1,5 +1,6 @@
 //import * as dat from 'dat.gui';
 /// <reference path="../libs/sylvester.js" />
+/// <reference path="../libs/stats.min.js" />
 
 // FPS counter
 var stats;
